@@ -1,24 +1,48 @@
-import { Args, Int, Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
+import { Args, Int, Parent, Query, ResolveField, Resolver, Mutation } from "@nestjs/graphql";
 
 import { User } from "./models/user.model";
+
 import { UsersService } from "./users.service";
-import { PostsService } from "../posts/posts.service";
+import { AuthService } from '../auth/auth.service';
+
+import { RegisterInput, LoginInput, ModifyFriendListInput } from "./DTO/user.input";
+import { UserWithToken, Status } from "./DTO/user.dto";
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     private usersService: UsersService,
-    private postsService: PostsService,
+    private authService: AuthService
   ) {}
 
   @Query(() => User)
-  async author(@Args('id', { type: () => Int }) id: number) {
+  async user(@Args('id', { type: () => Int }) id: number) {
     return this.usersService.findOneById(id);
   }
 
+  @Mutation(() => UserWithToken)
+  async login(@Args('loginInput') loginInput: LoginInput) {
+    return await this.authService.login(loginInput);
+  }
+
+  @Mutation(() => User)
+  async register(@Args('registerInput') registerInput: RegisterInput) {
+    const createdUser = await this.usersService.create(registerInput);
+    return createdUser;
+  }
+
+  @Mutation(() => Status)
+  async addFriend(@Args('addFriend') addFriendInput: ModifyFriendListInput) {
+    return await this.usersService.addFriend(addFriendInput);
+  }
+
+  @Mutation(() => Status)
+  async removeFriend(@Args('removeFriend') removeFriendInput: ModifyFriendListInput) {
+    return await this.usersService.removeFriend(removeFriendInput);
+  }
+
   @ResolveField()
-  async posts(@Parent() author: User) {
-    const { id } = author;
-    return this.postsService.findAll(id);
+  async friends(@Parent() user: any) {
+    return this.usersService.findAllFriends(user);
   }
 }

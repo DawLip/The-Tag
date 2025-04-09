@@ -13,10 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
 
 import { UsersResolver } from './users/user.resolver';
-import { PostsResolver } from './posts/posts.resolver';
 import { EventsGateway } from './socket/events.gateway';
 import { CatsModule } from './cats/cats.module';
 
@@ -30,7 +28,6 @@ import { CatsModule } from './cats/cats.module';
       autoSchemaFile: true,
       playground: false
     }), 
-    PostsModule,
     MongooseModule.forRoot('mongodb://localhost:27017/test'),
     CatsModule,
   ],
@@ -41,7 +38,6 @@ import { CatsModule } from './cats/cats.module';
     //   useClass: JwtAuthGuard,
     // },
     UsersResolver,
-    PostsResolver,
     EventsGateway
   ],
 })

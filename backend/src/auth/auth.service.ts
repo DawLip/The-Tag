@@ -10,21 +10,28 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    console.log('validateUser', username, pass);
-    const user = await this.usersService.findOne(username);
+  async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.usersService.findOneByEmail(email);
     if (user && user.password === pass) {
-      const { password, ...result } = user;
-      return result;
+      return user._doc;
     }
     return null;
   }
 
   async login(user: any) {
-    console.log('login', user);
-    const payload = { username: user.username, sub: user.userId };
+    const loginedUser = await this.validateUser(user.email, user.password);
+    if (!loginedUser) {
+      return {
+        status: 'INVALID_CREDENTIALS',
+        access_token: null,
+        user: null,
+      }
+    }
+    
     return {
-      access_token: this.jwtService.sign(payload),
+      status: 'SUCCESS',
+      access_token: this.jwtService.sign({id: loginedUser.id}),
+      user: {...loginedUser}
     };
   }
 }
