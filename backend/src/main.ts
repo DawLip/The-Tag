@@ -11,6 +11,6 @@ async function bootstrap() {
     endpointURL: '/graphql',
   }));
 
-  await app.listen(process.env.PORT ?? 3003);
+  await app.listen(process.env.PORT ?? 3010);
 }
 bootstrap();

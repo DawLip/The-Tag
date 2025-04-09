@@ -16,6 +16,7 @@ import { PostsModule } from './posts/posts.module';
 
 import { UsersResolver } from './users/user.resolver';
 import { PostsResolver } from './posts/posts.resolver';
+import { EventsGateway } from './socket/events.gateway';
 
 
 @Module({
@@ -33,7 +34,8 @@ import { PostsResolver } from './posts/posts.resolver';
     //   useClass: JwtAuthGuard,
     // },
     UsersResolver,
-    PostsResolver
+    PostsResolver,
+    EventsGateway
   ],
 })
 export class AppModule {}
