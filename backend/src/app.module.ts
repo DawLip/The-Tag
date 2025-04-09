@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core'; 
+import { MongooseModule } from '@nestjs/mongoose';
 
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -17,16 +18,22 @@ import { PostsModule } from './posts/posts.module';
 import { UsersResolver } from './users/user.resolver';
 import { PostsResolver } from './posts/posts.resolver';
 import { EventsGateway } from './socket/events.gateway';
+import { CatsModule } from './cats/cats.module';
 
 
 @Module({
   imports: [
-    AuthModule, UsersModule, 
+    AuthModule, 
+    UsersModule, 
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
       playground: false
-    }), PostsModule],
+    }), 
+    PostsModule,
+    MongooseModule.forRoot('mongodb://localhost:27017/test'),
+    CatsModule,
+  ],
   controllers: [AppController],
   providers: [AppService,
     // {
