@@ -1,19 +1,39 @@
+import { join } from 'path';
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core'; 
+
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
+import { UsersModule } from './users/users.module';
+import { PostsModule } from './posts/posts.module';
+
+import { UsersResolver } from './users/user.resolver';
+import { PostsResolver } from './posts/posts.resolver';
+
+
 @Module({
-  imports: [AuthModule, UsersModule],
+  imports: [
+    AuthModule, UsersModule, 
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      playground: false
+    }), PostsModule],
   controllers: [AppController],
   providers: [AppService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: JwtAuthGuard,
+    // },
+    UsersResolver,
+    PostsResolver
   ],
 })
 export class AppModule {}
