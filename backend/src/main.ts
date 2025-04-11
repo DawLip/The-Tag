@@ -4,6 +4,8 @@ import { altairExpress } from 'altair-express-middleware';
 
 import { AppModule } from './app.module';
 
+import config from '../config';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -11,6 +13,6 @@ async function bootstrap() {
     endpointURL: '/graphql',
   }));
 
-  await app.listen(process.env.PORT ?? 3010);
+  await app.listen(process.env.PORT ?? config.serverPort);
 }
 bootstrap();

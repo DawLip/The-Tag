@@ -18,17 +18,18 @@ import { UsersResolver } from './users/user.resolver';
 import { EventsGateway } from './socket/events.gateway';
 import { CatsModule } from './cats/cats.module';
 
+import config from '../config';
 
 @Module({
   imports: [
-    AuthModule, 
+  AuthModule, 
     UsersModule, 
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
       playground: false
     }), 
-    MongooseModule.forRoot('mongodb://localhost:27017/test'),
+    MongooseModule.forRoot(config.mongo),
     CatsModule,
   ],
   controllers: [AppController],
