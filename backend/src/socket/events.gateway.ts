@@ -17,11 +17,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('message')
+  @SubscribeMessage('broadcast')
   handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket,) {
     console.log(`Message received: ${data}`);
+    client.broadcast.emit('broadcast', data);
 
-    return { event: 'message', data: data };
+    return { event: 'broadcast', data: data };
   }
 }
 
