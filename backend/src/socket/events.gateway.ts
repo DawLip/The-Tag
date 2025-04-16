@@ -1,9 +1,12 @@
 import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { GameService } from 'src/game/game.service';
 
 @WebSocketGateway(3011)  
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer() server: Server;  
+
+  constructor(private gameService: GameService) {}
 
   afterInit() {
     console.log('WebSocket server initialized');

@@ -32,7 +32,12 @@ export class UsersResolver {
   }
 
   @Mutation(() => Status)
-  async addFriend(@Args('addFriend') addFriendInput: ModifyFriendListInput) {
+  async inviteFriend(@Args('addFriend') addFriendInput: ModifyFriendListInput) {
+    return await this.usersService.addFriend(addFriendInput);
+  }
+
+  @Mutation(() => Status)
+  async reactToFriendInvitation(@Args('addFriend') addFriendInput: ModifyFriendListInput) {
     return await this.usersService.addFriend(addFriendInput);
   }
 

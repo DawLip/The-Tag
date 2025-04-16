@@ -6,17 +6,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { EventsGateway } from './socket/events.gateway';
 
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 import { UsersModule } from './users/users.module';
-
 import { UsersResolver } from './users/user.resolver';
-import { EventsGateway } from './socket/events.gateway';
-import { CatsModule } from './cats/cats.module';
+
+import { GameModule } from './game/game.module';
+import { GameResolver, GameLogResolver } from './game/game.resolver';
 
 import config from '../config';
 
@@ -24,22 +23,25 @@ import config from '../config';
   imports: [
   AuthModule, 
     UsersModule, 
+    GameModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
       playground: false
     }), 
     MongooseModule.forRoot(config.mongo),
-    CatsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService,
+  controllers: [],
+  providers: [
     // {
     //   provide: APP_GUARD,
     //   useClass: JwtAuthGuard,
     // },
+    EventsGateway,
+
     UsersResolver,
-    EventsGateway
+    GameResolver,
+    GameLogResolver,
   ],
 })
 export class AppModule {}
