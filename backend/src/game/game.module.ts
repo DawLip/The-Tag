@@ -16,7 +16,7 @@ import { UsersModule } from '../users/users.module';  // Tylko zaimportuj UsersM
     ]),
     UsersModule,
   ],
-  providers: [GameService, GameResolver], 
+  providers: [GameService], 
   exports: [GameService],
 })
 export class GameModule {}

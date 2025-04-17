@@ -21,6 +21,14 @@ export class Game {
   @Prop()
   description: string;
 
+  @Field()
+  @Prop()
+  status: string;
+
+  @Field()
+  @Prop()
+  gameCode: string;
+
   @Field(() => [String])
   @Prop({ type: [String] })
   rules: string[];
@@ -29,7 +37,7 @@ export class Game {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   owner: User;
 
-  @Field(() => User)
+  @Field(() => User, { nullable: true })
   @Prop({ type: Types.ObjectId, ref: 'User' })
   gameMaster: User;
 

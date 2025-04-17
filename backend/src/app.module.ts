@@ -27,16 +27,17 @@ import config from '../config';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
-      playground: false
+      playground: false,
+      context: ({ req, res }) => ({ req, res })
     }), 
     MongooseModule.forRoot(config.mongo),
   ],
   controllers: [],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: JwtAuthGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
     EventsGateway,
 
     UsersResolver,

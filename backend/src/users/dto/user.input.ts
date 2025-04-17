@@ -12,7 +12,7 @@ export class LoginInput {
 @InputType()
 export class RegisterInput {
   @Field(type => Int)
-  id: number;
+  _id: number;
 
   @Field()
   username: string;
