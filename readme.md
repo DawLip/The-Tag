@@ -5,3 +5,11 @@ MongoDB server    => mongodb://localhost:27017/test // każdy musi sobie sam lok
 
 frontend server   => localhost:3000
 
+do działania
+- zainstalować node js 
+- zainstalować npm jeżeli nie ma
+- cd backend
+- npm i
+
+odpalenie
+- npm run start:dev

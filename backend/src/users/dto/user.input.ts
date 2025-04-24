@@ -1,6 +1,15 @@
 import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 
 @InputType()
+export class GetUserInput {
+  @Field(type=> Int, { nullable: true })
+  _id?: number;
+
+  @Field(type=> String, { nullable: true })
+  email?: string;
+}
+
+@InputType()
 export class LoginInput {
   @Field()
   email: string;

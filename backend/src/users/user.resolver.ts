@@ -5,7 +5,7 @@ import { User } from "./models/user.model";
 import { UsersService } from "./users.service";
 import { AuthService } from '../auth/auth.service';
 
-import { RegisterInput, LoginInput, ModifyFriendListInput } from "./dto/user.input";
+import { RegisterInput, LoginInput, ModifyFriendListInput, GetUserInput } from "./dto/user.input";
 import { UserWithToken, Status } from "./dto/user.dto";
 import { Public } from "src/auth/auth.public";
 
@@ -17,35 +17,35 @@ export class UsersResolver {
   ) {}
 
   @Query(() => User)
-  async user(@Args('id', { type: () => Int }) id: number) {
-    return this.usersService.findOneById(id);
+  async user(@Args('input') input: GetUserInput) {
+    return this.usersService.findOne(input);
   }
 
   @Public()
   @Mutation(() => UserWithToken)
-  async login(@Args('loginInput') input: LoginInput) {
+  async login(@Args('input') input: LoginInput) {
     return await this.authService.login(input);
   }
 
   @Public()
   @Mutation(() => User)
-  async register(@Args('registerInput') input: RegisterInput) {
+  async register(@Args('input') input: RegisterInput) {
     const createdUser = await this.usersService.create(input);
     return createdUser;
   }
 
   @Mutation(() => Status)
-  async inviteFriend(@Args('addFriend') input: ModifyFriendListInput) {
+  async inviteFriend(@Args('input') input: ModifyFriendListInput) {
     return await this.usersService.addFriend(input);
   }
 
   @Mutation(() => Status)
-  async reactToFriendInvitation(@Args('addFriend') input: ModifyFriendListInput) {
+  async reactToFriendInvitation(@Args('input') input: ModifyFriendListInput) {
     return await this.usersService.addFriend(input);
   }
 
   @Mutation(() => Status)
-  async removeFriend(@Args('removeFriend') input: ModifyFriendListInput) {
+  async removeFriend(@Args('input') input: ModifyFriendListInput) {
     return await this.usersService.removeFriend(input);
   }
 
