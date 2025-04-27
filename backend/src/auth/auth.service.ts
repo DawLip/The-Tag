@@ -30,8 +30,17 @@ export class AuthService {
     
     return {
       status: 'SUCCESS',
-      access_token: this.jwtService.sign({id: loginedUser.id}),
+      access_token: this.jwtService.sign({_id: loginedUser._id}),
       user: {...loginedUser}
     };
+  }
+
+  async verify(token: string) {
+    try {
+      const payload = await this.jwtService.verify(token);
+      return payload;
+    } catch (e) {
+      return null;
+    }
   }
 }
