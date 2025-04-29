@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { JoinGameInput } from 'src/game/dto/game.input';
+
 import { Game, GameLog } from './models/game.model';
 
 @Injectable()
@@ -53,7 +55,7 @@ export class GameService {
   async updateLobby({ toChange, gameCode }): Promise<any> {
     const lobby = await this.gameModel.findOne({ gameCode: gameCode });
     
-    if (!lobby) throw new Error('Lobby not found');
+    if (!lobby) return { status: "ERROR", msg:"game not found" }
 
     for (const key in toChange) {
       if (key !== '_id') {
@@ -64,11 +66,30 @@ export class GameService {
     await lobby.save();
     return lobby;
   }
-  async joinLobby(data): Promise<any> { 
-    return {}; 
+  async joinLobby({gameCode, _id}:JoinGameInput): Promise<any> { 
+    console.log(`User ${_id} pretends to join lobby ${gameCode}`);
+    const lobby = await this.gameModel.findOne({gameCode});
+
+    if(!lobby) return { status:"ERROR", msg:"game not found" }
+    if(!_id) return {status:"ERROR", msg:"_id must be passed"}
+
+    lobby.spectators.push(_id);
+    lobby.save();
+
+    console.log(`success`)
+    return { status:"SUCCESS" }; 
   }
-  async leaveLobby(data): Promise<any> { 
-    return {}; 
+  async leaveLobby({gameCode, _id}:JoinGameInput): Promise<any> { 
+    console.log(`User ${_id} pretends to leave lobby ${gameCode}`);
+    const lobby = await this.gameModel.findOne({gameCode});
+
+    if(!lobby) return { status:"ERROR", msg:"game not found" }
+    if(!_id) return {status:"ERROR", msg:"_id must be passed"}
+
+    lobby.spectators = lobby.spectators.filter(s => s!=_id);
+    lobby.save();
+
+    return { status:"SUCCESS" }; 
   }
 
   // === Game ===

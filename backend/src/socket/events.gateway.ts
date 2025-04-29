@@ -2,6 +2,7 @@ import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, OnGatewayIn
 import { Server, Socket } from 'socket.io';
 import { GameService } from 'src/game/game.service';
 import { AuthService } from 'src/auth/auth.service';
+import { JoinGameInput } from 'src/game/dto/game.input';
 
 @WebSocketGateway(3011)  
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
@@ -43,8 +44,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
   
   @SubscribeMessage('join_lobby')
-  joinGame(@MessageBody() data: { gameCode:string }, @ConnectedSocket() client: Socket) {
-    return this.gameService.joinLobby(data);
+  joinGame(@MessageBody() data: JoinGameInput, @ConnectedSocket() client: Socket) {
+    return this.gameService.joinLobby({_id: client.data.user._id, ...data});
+  }
+  @SubscribeMessage('leave_lobby')
+  leaveLobby(@MessageBody() data: JoinGameInput, @ConnectedSocket() client: Socket) {
+    return this.gameService.leaveLobby({_id: client.data.user._id, ...data});
   }
 
   @SubscribeMessage('start_game')
@@ -64,7 +69,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   @SubscribeMessage('leave_game')
   leaveGame(@MessageBody() gameCode: string, @ConnectedSocket() client: Socket) {
-    return this.gameService.leaveLobby(gameCode);
+    return this.gameService.leaveLobby({gameCode});
   }
 
   // === Other events ===

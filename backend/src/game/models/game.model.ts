@@ -43,7 +43,7 @@ export class Game {
 
   @Field(() => [User])
   @Prop({ type: [Types.ObjectId], ref: 'User' })
-  spectators: User[];
+  spectators: number[];
 
   @Field(() => [User])
   @Prop({ type: [Types.ObjectId], ref: 'User' })
