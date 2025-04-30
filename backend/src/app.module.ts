@@ -16,6 +16,7 @@ import { UsersResolver } from './users/user.resolver';
 
 import { GameModule } from './game/game.module';
 import { GameResolver, GameLogResolver } from './game/game.resolver';
+import { AppController } from './app.controller';
 
 import config from '../config';
 
@@ -32,7 +33,7 @@ import config from '../config';
     }), 
     MongooseModule.forRoot(config.mongo),
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
@@ -42,7 +43,7 @@ import config from '../config';
 
     UsersResolver,
     GameResolver,
-    GameLogResolver,
+    GameLogResolver
   ],
 })
 export class AppModule {}

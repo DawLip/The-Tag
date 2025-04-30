@@ -1,20 +1,33 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Provider } from 'react-redux';
+import store from '@store/index';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+import { ApolloProvider } from '@apollo/client';
+import { client } from '@/appollo-client';
+
+import { SocketContext, socket } from '@/socket/socket';
+
+import '../global.css'
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Inter_400Regular,                                         // fontFamily: 'Inter_400Regular'
+    Inter_700Bold,                                            // fontFamily: 'Inter_700Bold'
+    Aboreto: require('../assets/fonts/Aboreto-Regular.ttf'),  // fontFamily: 'Aboreto'
   });
 
   useEffect(() => {
@@ -28,12 +41,22 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View className='flex-1 bg-bgc'>
+      <Provider store={store}>
+        <ApolloProvider client={client}>
+          <SocketContext.Provider value={socket}>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(main)" options={{ headerShown: false }} />
+              <Stack.Screen name="(lobby)" options={{ headerShown: false }} />
+              <Stack.Screen name="(game)" options={{ headerShown: false }} />
+              
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="light" backgroundColor="#262626" />
+          </SocketContext.Provider>
+        </ApolloProvider>
+      </Provider>
+    </View>
   );
 }

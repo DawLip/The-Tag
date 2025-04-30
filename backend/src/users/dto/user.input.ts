@@ -20,9 +20,6 @@ export class LoginInput {
 
 @InputType()
 export class RegisterInput {
-  @Field(type => Int)
-  _id: number;
-
   @Field()
   username: string;
 

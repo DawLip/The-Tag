@@ -24,13 +24,14 @@ export class UsersResolver {
   @Public()
   @Mutation(() => UserWithToken)
   async login(@Args('input') input: LoginInput) {
+    console.log("=== Login attempt ===");
     return await this.authService.login(input);
   }
 
   @Public()
-  @Mutation(() => User)
+  @Mutation(() => UserWithToken)
   async register(@Args('input') input: RegisterInput) {
-    const createdUser = await this.usersService.create(input);
+    const createdUser = await this.usersService.register(input);
     return createdUser;
   }
 

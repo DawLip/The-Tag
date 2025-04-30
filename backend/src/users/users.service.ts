@@ -3,16 +3,26 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './models/user.model';
 import { RegisterInput, ModifyFriendListInput, GetUserInput } from "./dto/user.input";
+import { UserWithToken } from './dto/user.dto';
+import { JwtService } from '@nestjs/jwt';
 
 export type U = any;
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtService: JwtService
+  ) {}
 
-  async create(input: RegisterInput): Promise<U> {
+  async create(input: RegisterInput): Promise<User> {
     const createdUser = new this.userModel(input);
-    return createdUser.save();
+    return await createdUser.save();
+  }
+  async register(input: RegisterInput):Promise<UserWithToken|null> {
+    const user = await this.create(input);
+    const access_token = await this.jwtService.sign({_id: user._id})
+    return { status: "SUCCESS", access_token, user };
   }
   
   async findOne({_id, email}:GetUserInput): Promise<U | undefined | null> {

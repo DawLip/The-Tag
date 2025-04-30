@@ -8,7 +8,6 @@ export type UserDocument = HydratedDocument<User>;
 @Schema()     
 export class User {
   @Field(() => ID)
-  @Prop({ type: Types.ObjectId })
   _id: Types.ObjectId;
 
   @Field()
