@@ -40,6 +40,7 @@ export default function RootLayout() {
     return null;
   }
 
+  
   return (
     <View className='flex-1 bg-bgc'>
       <Provider store={store}>
