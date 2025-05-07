@@ -4,11 +4,13 @@ import { Model, Types } from 'mongoose';
 import { Game, GameLog } from "./models/game.model";
 import { GameService } from "./game.service";
 import { User } from "../users/models/user.model";
+import { UsersService } from "src/users/users.service";
 
 @Resolver(() => Game)
 export class GameResolver {
   constructor(
-    private gameService: GameService
+    private gameService: GameService,
+    private userService: UsersService
   ) {}
 
   
@@ -19,22 +21,22 @@ export class GameResolver {
 
   @ResolveField(() => User) 
   async owner(@Parent() game: Game) {
-    return {};
+    return await this.userService.findOneById(game.owner);
   }
 
   @ResolveField(() => User) 
   async gameMaster(@Parent() game: Game) {
-    return {};
+    return await this.userService.findOneById(game.gameMaster);
   }
 
   @ResolveField(() => [User]) 
   async spectators(@Parent() game: Game) {
-    return [];
+    return await this.userService.findById(game.spectators);
   }
 
   @ResolveField(() => [User]) 
   async players(@Parent() game: Game) {
-    return [];
+    return await this.userService.findById(game.players);
   }
 }
 

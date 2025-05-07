@@ -35,19 +35,19 @@ export class Game {
 
   @Field(() => User)
   @Prop({ type: Types.ObjectId, ref: 'User' })
-  owner: User;
+  owner: string;
 
   @Field(() => User, { nullable: true })
   @Prop({ type: Types.ObjectId, ref: 'User' })
-  gameMaster: User;
+  gameMaster: string;
 
   @Field(() => [User])
   @Prop({ type: [Types.ObjectId], ref: 'User' })
-  spectators: number[];
+  spectators: string[];
 
   @Field(() => [User])
   @Prop({ type: [Types.ObjectId], ref: 'User' })
-  players: User[];
+  players: string[];
 
   @Field(() => [ID])
   @Prop({ type: [Types.ObjectId] })

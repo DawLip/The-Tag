@@ -30,11 +30,15 @@ export class UsersService {
     if(email) return this.findOneByEmail(email);
     return null;
   }
-  async findOneById(_id: number): Promise<U | undefined> {
+  async findOneById(_id: string): Promise<U | undefined> {
+    console.log(_id)
     return await this.userModel.findOne({_id: _id}).exec();
   }
   async findOneByEmail(email: string): Promise<U | undefined> {
     return await this.userModel.findOne({email: email}).exec();
+  }
+  async findById(users:string[]): Promise<U | undefined> {
+    return await this.userModel.find({_id:{"$in": users}}).exec();
   }
 
   async findAllFriends(user:User): Promise<U | undefined> {

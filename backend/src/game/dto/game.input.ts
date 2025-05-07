@@ -6,6 +6,6 @@ export class JoinGameInput {
   gameCode: string;
 
   @Field(type=> Int, {nullable: true})
-  _id?: number;
+  _id?: string;
 
 }
