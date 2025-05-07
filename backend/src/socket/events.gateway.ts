@@ -35,7 +35,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   @SubscribeMessage('create_lobby')
   createGame(@MessageBody() data, @ConnectedSocket() client: Socket) {
-    return this.gameService.createLobby(client.data.user._id);
+    return this.gameService.createLobby(client.data.user._id, client);
   }
 
   @SubscribeMessage('lobby_update')
@@ -45,7 +45,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   
   @SubscribeMessage('join_lobby')
   joinGame(@MessageBody() data: JoinGameInput, @ConnectedSocket() client: Socket) {
-    return this.gameService.joinLobby({_id: client.data.user._id, ...data});
+    return this.gameService.joinLobby({_id: client.data.user._id, ...data}, client);
   }
   @SubscribeMessage('leave_lobby')
   leaveLobby(@MessageBody() data: JoinGameInput, @ConnectedSocket() client: Socket) {
@@ -64,7 +64,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   @SubscribeMessage('pos_update')
   posUpdate(@MessageBody() data: { gameCode: string; userId: string, pos: any }, @ConnectedSocket() client: Socket) {
-    return this.gameService.updatePos(data);
+    return this.gameService.updatePos(data, client);
   }
 
   @SubscribeMessage('leave_game')

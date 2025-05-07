@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Socket } from 'socket.io';
 
 import { JoinGameInput } from 'src/game/dto/game.input';
 
 import { Game, GameLog } from './models/game.model';
+import { gameDefault } from './models/gameDefaults';
 
 @Injectable()
 export class GameService {
@@ -36,19 +38,10 @@ export class GameService {
   }
 
   // === Lobby ===
-  async createLobby(creatorId): Promise<any> { 
-    const createdLobby = new this.gameModel({
-      name: 'New lobby',
-      description: 'Lobby for the game',
-      gameCode: this.generateGameCode(),
-      status: 'LOBBY',
-      rules: [],
-      owner: creatorId,
-      gameMaster: null,
-      spectators: [creatorId],
-      players: [],
-      gameLogs: [],
-    });
+  async createLobby(creatorId, client): Promise<any> { 
+    const gameCode = this.generateGameCode();
+    const createdLobby = new this.gameModel(gameDefault(gameCode, creatorId));
+    client.join(gameCode);
     console.log(`Created lobby ${createdLobby._id}`);
     return createdLobby.save();
   }
@@ -66,12 +59,26 @@ export class GameService {
     await lobby.save();
     return lobby;
   }
-  async joinLobby({gameCode, _id}:JoinGameInput): Promise<any> { 
+  async updateLobbySettings({ toChange, gameCode }): Promise<any> {
+    const lobby = await this.gameModel.findOne({ gameCode: gameCode });
+    
+    if (!lobby) return { status: "ERROR", msg:"game not found" }
+
+    for (const key in toChange) {
+      if (key !== '_id') {
+        lobby.settings[key] = toChange[key];
+      }
+    }
+    
+    await lobby.save();
+    return lobby;
+  }
+  async joinLobby({gameCode, _id}:JoinGameInput, client): Promise<any> { 
     console.log(`User ${_id} pretends to join lobby ${gameCode}`);
     const lobby = await this.gameModel.findOne({gameCode});
 
     if(!lobby) return { status:"ERROR", msg:"game not found" }
-    if(!_id) return {status:"ERROR", msg:"_id must be passed"}
+    if(!_id) return { status:"ERROR", msg:"_id must be passed"}
 
     lobby.spectators.push(_id);
     lobby.save();
@@ -93,14 +100,25 @@ export class GameService {
   }
 
   // === Game ===
-  async startGame(data): Promise<any> { 
-    return {}; 
+  async startGame({gameCode}:{gameCode:string}): Promise<any> { 
+    console.log(`Game  ${gameCode} started`);
+    const game = await this.gameModel.findOne({gameCode});
+
+    if(!game) return { status:"ERROR", msg:"game not found" }
+    game.status="STARTED";
+    game.save()
   }
   async updateGame(data): Promise<any> { 
     return {}; 
   }
-  async updatePos(data): Promise<any> { 
-    return {}; 
+  async updatePos({gameCode, userId, pos}, client:Socket): Promise<any> { 
+    console.log(`User ${userId} update pos: ${pos}`);
+    const game = await this.gameModel.findOne({gameCode});
+
+    if(!game) return { status:"ERROR", msg:"game not found" }
+    if(!userId) return {status:"ERROR", msg:"_id must be passed"}
+
+    client.broadcast.to(gameCode).emit('pos_update', { gameCode, userId, pos });
   }
   async leavePos(data): Promise<any> { 
     return {}; 

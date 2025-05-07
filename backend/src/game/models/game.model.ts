@@ -1,8 +1,9 @@
-import { Types } from 'mongoose';
+import { Types, Schema as MongooseSchema } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { User } from '../../users/models/user.model';
+import GraphQLJSON from 'graphql-type-json';
 
 export type GameDocument = HydratedDocument<Game>;
 export type GameLogDocument = HydratedDocument<GameLog>;
@@ -32,6 +33,14 @@ export class Game {
   @Field(() => [String])
   @Prop({ type: [String] })
   rules: string[];
+
+  @Field(() => GraphQLJSON)
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  settings: Record<string, any>;
+
+  @Field(() => GraphQLJSON)
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  events: Record<string, any>;
 
   @Field(() => User)
   @Prop({ type: Types.ObjectId, ref: 'User' })
