@@ -1,22 +1,46 @@
-import { Tabs, Stack } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Stack, useRouter } from 'expo-router';
+import { SafeAreaView, TouchableOpacity } from 'react-native';
+import ArrowIcon from '@img/ArrowIcon.svg';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function TabLayout() {
   useAuth(true);
+  const router = useRouter();
 
   return (
-    <SafeAreaView style={{flex: 1}} className='bg-bgc'>
-      <Stack>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#262626' }}>
+    // Żeby mieć pełną kontrolę (cienie, wysokość, border dolny), musiałabym zrobić własny Header komponent i wstawić go ręcznie nad ekranami
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#343437',
+           
+          },
+          headerTitleStyle: {
+            fontFamily: 'Aboreto',
+            fontSize: 24,
+            color: '#FFFFFF',
+          },
+          headerTintColor: 'transparent',
+          headerBackTitleVisible: false,
+          headerShadowVisible: false, 
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ paddingHorizontal: 16 }}
+            >
+              <ArrowIcon width={32} height={32} />
+            </TouchableOpacity>
+          ),
+        }}
+      >
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="Login" options={{}} />
-        <Stack.Screen name="Register" options={{}} />
-        <Stack.Screen name="AsGuest" options={{}} />
-        <Stack.Screen name="ChangePassword" options={{}} />
-        <Stack.Screen name="ForgotPassword" options={{}} />
+        <Stack.Screen name="Login" options={{ title: 'LOGIN' }} />
+        <Stack.Screen name="Register" options={{ title: 'REGISTER' }} />
+        <Stack.Screen name="AsGuest" options={{ title: 'JOIN GAME' }} />
+        <Stack.Screen name="ChangePassword" options={{ title: 'NEW PASSWORD' }} />
+        <Stack.Screen name="ForgotPassword" options={{ title: 'RESET PASSWORD' }} />
       </Stack>
     </SafeAreaView>
   );
