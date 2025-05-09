@@ -10,7 +10,6 @@ export default function TabLayout() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#262626' }}>
-    // Żeby mieć pełną kontrolę (cienie, wysokość, border dolny), musiałabym zrobić własny Header komponent i wstawić go ręcznie nad ekranami
       <Stack
         screenOptions={{
           headerStyle: {
