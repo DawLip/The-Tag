@@ -56,7 +56,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   @SubscribeMessage('start_game')
   startGame(@MessageBody() data: { gameCode: string }, @ConnectedSocket() client: Socket) {
-    return this.gameService.startGame(data);
+    return this.gameService.startGame(data, client);
   }
 
   @SubscribeMessage('game_update')

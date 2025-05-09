@@ -40,8 +40,11 @@ const gameSlice = createSlice({
     userJoined: (state, action: PayloadAction<any>) => {
       state.players.push(action.payload);
     },
+    gameStarted: (state, action: PayloadAction<any>) => {
+      state.status = 'STARTED';
+    },
   },
 });
 
-export const { joinLobby, userJoined } = gameSlice.actions;
+export const { joinLobby, userJoined, gameStarted } = gameSlice.actions;
 export default gameSlice.reducer;

@@ -49,16 +49,6 @@ export class GameService {
   
     return { status: 'SUCCESS', game: await this.populatePlayers(game) };
   }
-  async populatePlayers(game): Promise<any> {
-    const populatedPlayers = await Promise.all(
-      game.players.map(async (player) => ({
-        ...(await this.usersService.findOneById(player.playerId)).toObject(),
-        role: player.role,
-      })
-    ));
-  
-    return {...game, players: populatedPlayers};
-  }
   async updateLobby({ toChange, gameCode }): Promise<any> {
     const lobby = await this.gameModel.findOne({ gameCode: gameCode });
     
@@ -94,16 +84,17 @@ export class GameService {
     if(!lobby) return { status:"ERROR", msg:"game not found" }
     if(!_id) return { status:"ERROR", msg:"_id must be passed"}
 
+    client.join(gameCode);
     client.to(gameCode).emit('user_joined', { 
       ...(await this.usersService.findOneById(_id)).toObject(),
       role: 0
      });
 
     lobby.players.push({ playerId: _id, role: 0 });
-    lobby.save();
+    const game = (await lobby.save()).toObject();
 
     console.log(`success`)
-    return { status: 'SUCCESS', game: await this.populatePlayers(lobby) };
+    return { status: 'SUCCESS', game: await this.populatePlayers(game) };
   }
   async leaveLobby({gameCode, _id}:JoinGameInput): Promise<any> { 
     console.log(`User ${_id} pretends to leave lobby ${gameCode}`);
@@ -119,13 +110,15 @@ export class GameService {
   }
 
   // === Game ===
-  async startGame({gameCode}:{gameCode:string}): Promise<any> { 
+  async startGame({gameCode}:{gameCode:string}, client:Socket): Promise<any> { 
     console.log(`Game  ${gameCode} started`);
     const game = await this.gameModel.findOne({gameCode});
 
     if(!game) return { status:"ERROR", msg:"game not found" }
     game.status="STARTED";
-    game.save()
+    await game.save();
+    console.log("success");
+    client.to(gameCode).emit('game_started', { gameCode });
   }
   async updateGame(data): Promise<any> { 
     return {}; 
@@ -144,8 +137,15 @@ export class GameService {
   }
 
   // === Populate ===
-  async populateByUser(data): Promise<any> { 
-    return {}; 
+  async populatePlayers(game): Promise<any> {
+    const populatedPlayers = await Promise.all(
+      game.players.map(async (player) => ({
+        ...(await this.usersService.findOneById(player.playerId)).toObject(),
+        role: player.role,
+      })
+    ));
+  
+    return {...game, players: populatedPlayers};
   }
   async populateByGameLog(data): Promise<any> { 
     return {}; 

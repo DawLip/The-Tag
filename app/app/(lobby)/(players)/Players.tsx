@@ -26,8 +26,8 @@ export default function PlayersScreen() {
         <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>Players</Text>
         {players?.map((player: any) => (
           <View key={player._id} className='flex-row items-center'>
-            <Text className='text-on_bgc'>{player.username}</Text>
-            <Text className='text-on_bgc'>{player.role}</Text>
+            <Text className='text-on_bgc'>name: {player.username} </Text>
+            <Text className='text-on_bgc'>role: {player.role}</Text>
           </View>
         ))}
       </View>
