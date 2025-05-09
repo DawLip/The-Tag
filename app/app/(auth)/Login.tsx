@@ -22,9 +22,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassowrd] = useState('');
 
-  useEffect(() => {
-    dispatch(setError(''));
-  }, []);
+  useEffect(() => { dispatch(setError('')) }, []);
 
   return (
     <View style={styles.container}>

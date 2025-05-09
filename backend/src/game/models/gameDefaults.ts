@@ -29,8 +29,7 @@ export function gameDefault(gameCode, creatorId){
       ],
       owner: creatorId,
       gameMaster: null,
-      spectators: [creatorId],
-      players: [],
+      players: [{ playerId: creatorId, role: 0 }],
       gameLogs: [],
     }
   )

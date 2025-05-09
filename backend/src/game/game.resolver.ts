@@ -29,14 +29,14 @@ export class GameResolver {
     return await this.userService.findOneById(game.gameMaster);
   }
 
-  @ResolveField(() => [User]) 
-  async spectators(@Parent() game: Game) {
-    return await this.userService.findById(game.spectators);
-  }
+  // @ResolveField(() => [User]) 
+  // async spectators(@Parent() game: Game) {
+  //   return await this.userService.findById(game.spectators);
+  // }
 
   @ResolveField(() => [User]) 
   async players(@Parent() game: Game) {
-    return await this.userService.findById(game.players);
+    return await this.userService.findById(game.players.map((player) => player.playerId));
   }
 }
 

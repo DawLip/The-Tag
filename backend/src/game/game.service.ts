@@ -7,12 +7,14 @@ import { JoinGameInput } from 'src/game/dto/game.input';
 
 import { Game, GameLog } from './models/game.model';
 import { gameDefault } from './models/gameDefaults';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class GameService {
   constructor(
     @InjectModel(Game.name) private gameModel: Model<Game>,
     @InjectModel(GameLog.name) private gameLogModel: Model<GameLog>,
+    private usersService: UsersService,
   ) {}
 
   // === General ===
@@ -41,9 +43,21 @@ export class GameService {
   async createLobby(creatorId, client): Promise<any> { 
     const gameCode = this.generateGameCode();
     const createdLobby = new this.gameModel(gameDefault(gameCode, creatorId));
-    client.join(gameCode);
     console.log(`Created lobby ${createdLobby._id}`);
-    return createdLobby.save();
+    client.join(gameCode);
+    const game = (await createdLobby.save()).toObject();
+  
+    return { status: 'SUCCESS', game: await this.populatePlayers(game) };
+  }
+  async populatePlayers(game): Promise<any> {
+    const populatedPlayers = await Promise.all(
+      game.players.map(async (player) => ({
+        ...(await this.usersService.findOneById(player.playerId)).toObject(),
+        role: player.role,
+      })
+    ));
+  
+    return {...game, players: populatedPlayers};
   }
   async updateLobby({ toChange, gameCode }): Promise<any> {
     const lobby = await this.gameModel.findOne({ gameCode: gameCode });
@@ -80,11 +94,16 @@ export class GameService {
     if(!lobby) return { status:"ERROR", msg:"game not found" }
     if(!_id) return { status:"ERROR", msg:"_id must be passed"}
 
-    lobby.spectators.push(_id);
+    client.to(gameCode).emit('user_joined', { 
+      ...(await this.usersService.findOneById(_id)).toObject(),
+      role: 0
+     });
+
+    lobby.players.push({ playerId: _id, role: 0 });
     lobby.save();
 
     console.log(`success`)
-    return { status:"SUCCESS" }; 
+    return { status: 'SUCCESS', game: await this.populatePlayers(lobby) };
   }
   async leaveLobby({gameCode, _id}:JoinGameInput): Promise<any> { 
     console.log(`User ${_id} pretends to leave lobby ${gameCode}`);
@@ -93,7 +112,7 @@ export class GameService {
     if(!lobby) return { status:"ERROR", msg:"game not found" }
     if(!_id) return {status:"ERROR", msg:"_id must be passed"}
 
-    lobby.spectators = lobby.spectators.filter(s => s!=_id);
+    // lobby.spectators = lobby.spectators.filter(s => s!=_id);
     lobby.save();
 
     return { status:"SUCCESS" }; 

@@ -4,6 +4,7 @@ import { HydratedDocument } from 'mongoose';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { User } from '../../users/models/user.model';
 import GraphQLJSON from 'graphql-type-json';
+import { Player, PlayerSchema } from './player.model';
 
 export type GameDocument = HydratedDocument<Game>;
 export type GameLogDocument = HydratedDocument<GameLog>;
@@ -50,13 +51,8 @@ export class Game {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   gameMaster: string;
 
-  @Field(() => [User])
-  @Prop({ type: [Types.ObjectId], ref: 'User' })
-  spectators: string[];
-
-  @Field(() => [User])
-  @Prop({ type: [Types.ObjectId], ref: 'User' })
-  players: string[];
+  @Prop({ type: [PlayerSchema] })
+  players: Player[];
 
   @Field(() => [ID])
   @Prop({ type: [Types.ObjectId] })

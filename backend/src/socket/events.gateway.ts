@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { GameService } from 'src/game/game.service';
 import { AuthService } from 'src/auth/auth.service';
 import { JoinGameInput } from 'src/game/dto/game.input';
+import config from '@/../config';
 
 @WebSocketGateway(3011)  
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
@@ -18,8 +19,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
-    const token = client.handshake.headers.authorization?.slice(7) || "";
+    const token = client.handshake.auth?.token?.replace(/^Bearer /, "") || "";
     const payload = await this.authService.verify(token);
+    console.log(`Client attempt to connect: ${client.id}`);
     if (!payload) {
       console.log(`Client failed to connect: ${client.id}`);
       client.disconnect();

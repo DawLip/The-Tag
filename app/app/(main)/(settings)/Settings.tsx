@@ -10,6 +10,8 @@ export default function SettingsScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
 
+  const handleLogout = () => { dispatch(logout()); router.push('/(auth)/Login');};
+
   return (
     <View className='flex-1 bg-bgc'>
       <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>Settings</Text>
@@ -18,7 +20,7 @@ export default function SettingsScreen() {
         <Button label='Statistics' onPress={()=>router.push('/(main)/(settings)/Statistics')}/>
         <Button label='Friends' onPress={()=>router.push('/(main)/(settings)/Friends')}/>
         <Button label='Account' onPress={()=>router.push('/(main)/(settings)/Account')}/>
-        <Button label='Logout' onPress={() => dispatch(logout())}/>
+        <Button label='Logout' onPress={handleLogout}/>
       </View>
     </View>
   );

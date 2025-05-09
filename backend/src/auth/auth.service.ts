@@ -21,13 +21,15 @@ export class AuthService {
   async login(user: any) {
     const loginedUser = await this.validateUser(user.email, user.password);
     if (!loginedUser) {
+      console.log("failed");
       return {
         status: 'INVALID_CREDENTIALS',
         access_token: null,
         user: null,
       }
     }
-    
+
+    console.log("success");
     return {
       status: 'SUCCESS',
       access_token: this.jwtService.sign({_id: loginedUser._id}),

@@ -30,17 +30,10 @@ export default function RootLayout() {
     Aboreto: require('../assets/fonts/Aboreto-Regular.ttf'),  // fontFamily: 'Aboreto'
   });
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+  useEffect(() => { if(loaded) SplashScreen.hideAsync() }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) { return null }
 
-  
   return (
     <View className='flex-1 bg-bgc'>
       <Provider store={store}>
