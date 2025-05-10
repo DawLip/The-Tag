@@ -5,7 +5,9 @@ import Logo2 from '@img/Logo2.svg';
 const Background = () => {
   return (
     <View style={styles.background}>
-      <Logo2 width="100%" height="100%" />
+      <View style={styles.logo}>
+         <Logo2/>
+      </View>
     </View>
   );
 };
@@ -14,8 +16,19 @@ const styles = StyleSheet.create({
   background: {
     ...StyleSheet.absoluteFillObject, 
     zIndex: 0,
-    margin: 10,
+    gap: 10,
+    backgroundColor: '#262626',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  logo: {
+    width:361,
+    height:366.6,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
 
 export default Background;
