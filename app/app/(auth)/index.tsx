@@ -11,8 +11,8 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>THE TAG</Text>
-      <Logo width={361} height={366.6} />
-
+      <View style = {styles.logo}><Logo width = {297} height = {301.6} /></View>
+    
       <View style={styles.buttonGroup}>
         <Button label="LOG IN" onPress={() => router.push('/(auth)/Login')} />
         <Button label="PLAY AS GUEST" onPress={() => router.push('/(auth)/AsGuest')} />
@@ -48,8 +48,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center', 
   },
   buttonGroup: {
-    width: '100%',
-    gap: 16, 
+    width: 297,
+    height: 256,
+    gap: 24, 
   },
+
+  logo: {
+    width: 297,
+    height: 354,
+    marginTop: 32,
+    marginBottom: -24,
+  }
 });
 

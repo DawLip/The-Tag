@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 48,
-    backgroundColor: '#1E1E1E',
+    //paddingHorizontal: 48,
+   // backgroundColor: '#1E1E1E',
   },
   content: {
     width: 297,
