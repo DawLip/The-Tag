@@ -1,7 +1,7 @@
 const config = {
   urls: {
     protocol: 'http://',
-    serverIp: '192.168.0.28',
+    serverIp: '192.168.1.26', //dostosować do swojego ip
     serverPort: '3010',
     socketPort: '3011',
 
