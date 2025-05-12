@@ -1,4 +1,5 @@
-import { Socket } from 'socket.io-client';
+import { useSocket } from '@/socket/socket';
+import { useEffect, useRef } from 'react';
 
 export type PlayerPosition = {
   userId: string;
@@ -14,58 +15,68 @@ export type SimplifiedPlayer = {
 
 type Callback = (players: SimplifiedPlayer[]) => void;
 
-class PlayerPositionManager {
-  private players: PlayerPosition[] = [];
-  private socket: Socket | null = null;
-  private currentUserId: string = '';
-  private updateCallbacks: Callback[] = [];
+export function usePlayerPositionManager(currentUserId: string) {
+  const socket = useSocket();
+  const playersRef = useRef<PlayerPosition[]>([]);
+  const callbacksRef = useRef<Callback[]>([]);
 
-  init(socket: Socket, userId: string) {
-    this.socket = socket;
-    this.currentUserId = userId;
-
-    socket.on('pos_update', (data: PlayerPosition) => {
-      this.updatePlayer(data);
-      this.notify();
-    });
-  }
-
-  sendMyPosition(latitude: number, longitude: number) {
-    if (!this.socket || !this.currentUserId) return;
-    this.socket.emit('pos_update', {
-      userId: this.currentUserId,
-      latitude,
-      longitude,
-    });
-  }
-
-  private updatePlayer(data: PlayerPosition) {
-    const index = this.players.findIndex(p => p.userId === data.userId);
+  // Aktualizuje pozycję gracza w tablicy
+  const updatePlayer = (data: PlayerPosition) => {
+    const index = playersRef.current.findIndex(p => p.userId === data.userId);
     if (index !== -1) {
-      this.players[index] = data;
+      playersRef.current[index] = data;
     } else {
-      this.players.push(data);
+      playersRef.current.push(data);
     }
-  }
+  };
 
-  private getOtherPlayers(): SimplifiedPlayer[] {
-    return this.players
-      .filter(p => p.userId !== this.currentUserId)
+  // Zwraca innych graczy (poza currentUserId)
+  const getOtherPlayers = (): SimplifiedPlayer[] => {
+    return playersRef.current
+      .filter(p => p.userId !== currentUserId)
       .map(p => ({
         latitude: p.latitude,
         longitude: p.longitude,
         type: 'hider',
       }));
-  }
+  };
 
-  onUpdate(callback: Callback) {
-    this.updateCallbacks.push(callback);
-  }
+  // Powiadamia zarejestrowane callbacki
+  const notify = () => {
+    const others = getOtherPlayers();
+    callbacksRef.current.forEach(cb => cb(others));
+  };
 
-  private notify() {
-    const others = this.getOtherPlayers();
-    this.updateCallbacks.forEach(cb => cb(others));
-  }
+  // Funkcja do wysyłania własnej pozycji
+  const sendMyPosition = (latitude: number, longitude: number) => {
+    if (!socket || !currentUserId) return;
+    socket.emit('pos_update', {
+      userId: currentUserId,
+      latitude,
+      longitude,
+    });
+  };
+
+  // Rejestruje callback do aktualizacji pozycji innych graczy
+  const onUpdate = (callback: Callback) => {
+    callbacksRef.current.push(callback);
+  };
+
+  // Efekt do nasłuchiwania eventów socketu
+  useEffect(() => {
+    if (!socket) return;
+
+    const handler = (data: PlayerPosition) => {
+      updatePlayer(data);
+      notify();
+    };
+
+    socket.on('pos_update', handler);
+
+    return () => {
+      socket.off('pos_update', handler);
+    };
+  }, [socket]);
+
+  return { sendMyPosition, onUpdate };
 }
-
-export const playerPositionManager = new PlayerPositionManager();

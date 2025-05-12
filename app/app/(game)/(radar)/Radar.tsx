@@ -1,40 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { useRouter } from 'expo-router';
-
 import { useSelector } from 'react-redux';
-import { useSocket } from '@/socket/socket';
-import { RadarMap } from './RadarMap';
+import { usePlayerPositionManager, SimplifiedPlayer } from './playerPositionManager';
 import Background from '@c/Background';
-
-import {
-  playerPositionManager,
-  SimplifiedPlayer
-} from './playerPositionManager';
+import { RadarMap } from './RadarMap';
 
 export default function RadarScreen() {
-  const router = useRouter();
-  const socket = useSocket();
-  const [players, setPlayers] = useState<SimplifiedPlayer[]>([]);
-
   const currentUserId = useSelector((state: any) => state.auth.userId);
+  const [players, setPlayers] = useState<SimplifiedPlayer[]>([]);
+  const { sendMyPosition, onUpdate } = usePlayerPositionManager(currentUserId);
+
   useEffect(() => {
-    if (!socket) return;
+    if (!currentUserId) return;
 
-    // Inicjalizacja managera pozycji
-    playerPositionManager.init(socket, currentUserId);
-
-    // Rejestruj callback, który ustawia pozycje pozostałych graczy
-    playerPositionManager.onUpdate((updatedPlayers) => {
+    const callback = (updatedPlayers: SimplifiedPlayer[]) => {
       setPlayers(updatedPlayers);
-    });
+    };
 
-  }, [socket]);
+    onUpdate(callback);
+  }, [currentUserId, onUpdate]);
 
-  if (!socket) {
+  if (!currentUserId) {
     return (
       <View className="flex-1 justify-center items-center bg-bgc">
-        <Text>Łączenie z serwerem...</Text>
+        <Text>Ładowanie użytkownika...</Text>
       </View>
     );
   }
@@ -47,7 +36,7 @@ export default function RadarScreen() {
         maxZoomRadius={1800}
         players={players}
         onPositionUpdate={(lat, lon) => {
-          playerPositionManager.sendMyPosition(lat, lon);
+          sendMyPosition(lat, lon);
         }}
       />
     </View>
