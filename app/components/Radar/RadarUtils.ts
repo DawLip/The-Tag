@@ -69,3 +69,42 @@ export const calculateTransparency = (index : number, total : number) => {
     return `rgba(${r},${g},${b},0.4)`;
   };
   
+
+  export const convertPointsToCoordinates = (
+    points: number[]
+  ): { latitude: number; longitude: number }[] => {
+    const coordinates: { latitude: number; longitude: number }[] = [];
+    for (let i = 0; i < points.length; i += 2) {
+      coordinates.push({
+        latitude: points[i],
+        longitude: points[i + 1],
+      });
+    }
+    return coordinates;
+  };
+  
+  export function generateCirclePolygon(
+    center: { latitude: number; longitude: number },
+    radius: number,
+    points = 32
+  ): { latitude: number; longitude: number }[] {
+    const coords: { latitude: number; longitude: number }[] = [];
+    const earthRadius = 6371000; // in meters
+  
+    for (let i = 0; i < points; i++) {
+      const angle = (i * 2 * Math.PI) / points;
+      const dx = radius * Math.cos(angle);
+      const dy = radius * Math.sin(angle);
+  
+      const deltaLat = dy / earthRadius;
+      const deltaLon = dx / (earthRadius * Math.cos((Math.PI * center.latitude) / 180));
+  
+      const lat = center.latitude + (deltaLat * 180) / Math.PI;
+      const lon = center.longitude + (deltaLon * 180) / Math.PI;
+  
+      coords.push({ latitude: lat, longitude: lon });
+    }
+  
+    return coords;
+  }
+  

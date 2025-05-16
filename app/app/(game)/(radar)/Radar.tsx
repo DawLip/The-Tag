@@ -1,15 +1,10 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useState, useContext } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Background from '@c/Background';
-import { RadarMap } from './RadarMap';
+import { RadarMap } from '@c/Radar/RadarMap';
 import { SocketContext } from '@/socket/socket';
-
-interface RawPlayer {
-  userId: string;
-  lat: number;
-  lon: number;
-}
+import { usePlayersUpdater } from '@/hooks/PlayersUpdat';
 
 interface RadarPlayer {
   latitude: number;
@@ -22,9 +17,10 @@ export default function RadarScreen() {
   const currentUserId = useSelector((state: any) => state.auth.userId);
   const gameCode = useSelector((state: any) => state.game.gameCode);
 
-  const playersRef = useRef<Record<string, RawPlayer>>({});
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
   const [intervalMs, setIntervalMs] = useState(1000);
+
+  usePlayersUpdater(currentUserId, setPlayers, intervalMs);
 
   const sendMyPosition = (lat: number, lon: number) => {
     if (socket && socket.connected && gameCode && currentUserId) {
@@ -36,40 +32,6 @@ export default function RadarScreen() {
     }
   };
 
-  useEffect(() => {
-    if (!socket) return;
-
-    const onPlayersUpdate = (data: { userId: string; pos: { lat: number; lon: number } }) => {
-      const { userId, pos } = data;
-      if (userId !== currentUserId) {
-        playersRef.current[userId] = {
-          userId,
-          lat: pos.lat,
-          lon: pos.lon,
-        };
-      }
-    };
-
-    socket.on('pos_update', onPlayersUpdate);
-
-    const timer = setInterval(() => {
-      const formattedPlayers: RadarPlayer[] = Object.values(playersRef.current).map((p) => ({
-        latitude: p.lat,
-        longitude: p.lon,
-        type: 'hider',
-      }));
-
-      //console.log('[RADAR] Formatted players:', formattedPlayers);
-
-      setPlayers(formattedPlayers);
-    }, intervalMs);
-
-    return () => {
-      socket.off('pos_update', onPlayersUpdate);
-      clearInterval(timer);
-    };
-  }, [socket, currentUserId, intervalMs]);
-
   return (
     <View className="flex-1 bg-bgc">
       <Background />
@@ -77,6 +39,11 @@ export default function RadarScreen() {
         playerType="hider"
         maxZoomRadius={2500}
         players={players}
+        border={{
+          points: [50.23130254898192, 18.94595480308516],
+          radius: 1800,
+          color: '#CC4010',
+        }}
         onPositionUpdate={(lat, lon) => sendMyPosition(lat, lon)}
       />
     </View>

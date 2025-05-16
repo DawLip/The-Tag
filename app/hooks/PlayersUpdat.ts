@@ -10,7 +10,7 @@ interface RawPlayer {
 interface RadarPlayer {
   latitude: number;
   longitude: number;
-  type: string; // e.g., 'hider'
+  type: string;
 }
 
 export function usePlayersUpdater(
@@ -26,7 +26,10 @@ export function usePlayersUpdater(
     if (!socket) return;
 
     const onPlayersUpdate = (data: { userId: string; pos: { lat: number; lon: number } }) => {
+      if (!data?.userId || !data?.pos) return;
+
       const { userId, pos } = data;
+
       if (userId !== currentUserId) {
         playersRef.current[userId] = {
           userId,
@@ -39,19 +42,19 @@ export function usePlayersUpdater(
     socket.on('pos_update', onPlayersUpdate);
 
     const timer = setInterval(() => {
-      const playersArray: RadarPlayer[] = Object.values(playersRef.current).map((p) => ({
+      const formatted: RadarPlayer[] = Object.values(playersRef.current).map((p) => ({
         latitude: p.lat,
         longitude: p.lon,
         type: 'hider',
       }));
-      updateMapRadar(playersArray);
+      updateMapRadar(formatted);
     }, intervalMs);
 
     return () => {
       socket.off('pos_update', onPlayersUpdate);
       clearInterval(timer);
     };
-  }, [intervalMs, currentUserId, updateMapRadar, socket]);
+  }, [socket, currentUserId, intervalMs, updateMapRadar]);
 
   return { setIntervalMs };
 }
