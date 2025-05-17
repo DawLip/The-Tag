@@ -21,12 +21,12 @@ export class GameResolver {
 
   @ResolveField(() => User) 
   async owner(@Parent() game: Game) {
-    return await this.userService.findOneById(game.owner);
+    return await this.userService.findOneById(game.owner.toString());
   }
 
   @ResolveField(() => User) 
   async gameMaster(@Parent() game: Game) {
-    return await this.userService.findOneById(game.gameMaster);
+    return await this.userService.findOneById(game.gameMaster.toString());
   }
 
   // @ResolveField(() => [User]) 

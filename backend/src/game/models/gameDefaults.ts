@@ -1,36 +1,91 @@
-export function gameDefault(gameCode, creatorId){
-  return (
-    {
-      name: 'New lobby',
-      description: 'Lobby for the game',
-      gameCode: gameCode,
-      status: 'LOBBY',
-      rules: [],
-      settings: {
-        saveTime: 5,
-        gameTime: 30,
-        posInterval: 60
-      },
-      events:{
-        interval:[
+export function gameDefault(gameCode: string, creatorId: string) {
+  return {
+    name: 'New lobby',
+    description: 'Lobby for the game',
+    gameCode: gameCode,
+    status: 'LOBBY',
+    rules: [],
+    settings: {
+      saveTime: 5,
+      gameTime: 30,
+      posInterval: 60,
+    },
+    border: {
+      type: 'polygon',
+      points: [
+        { lat: 0, lng: 0 },
+        { lat: 0, lng: 1 },
+        { lat: 1, lng: 0 },
+        { lat: 1, lng: 1 },
+      ],
+    },
+    events: {
+      interval: [
+        {
+          name: 'Jammer',
+          interval: 30,
+          roles: [1, 2],
+        },
+      ],
+      nTimes: [],
+      renewable: [],
+    },
+    roles: [
+      { name: 'Spectator' },
+      { name: 'Seeker' },
+      { name: 'Runner' },
+    ],
+    skills: [
+      {
+        type: 'fireball1',
+        description: 'Fireball 2',
+        area: [
           {
-            name: "Jammer",
-            interval: 30,
-            roles: [1,2]
+            type: 'circle',
+            points: [
+              { lat: 50.123, lng: 19.456 },
+              { lat: 50.124, lng: 19.457 }
+            ]
           }
         ],
-        nTimes:[],
-        renewable:[]
+
+        cooldown: 60,
+        uses: 3,
+        duration: 10,
+        waitToStart: 0,
+        affectedClasses: ['seeker'],
+        classes: ['runner']
       },
-      roles: [
-        { name: "Spectator" },
-        { name: "Seeker" },
-        { name: "Runner" },
-      ],
-      owner: creatorId,
-      gameMaster: null,
-      players: [{ playerId: creatorId, role: 0 }],
-      gameLogs: [],
-    }
-  )
+      {
+        type: 'fireball2',
+        description: 'Fireball 2',
+        area: [
+          {
+            type: 'circle',
+            points: [
+              { lat: 50.123, lng: 19.456 },
+              { lat: 50.124, lng: 19.457 }
+            ]
+          }
+        ],
+
+        cooldown: 60,
+        uses: 3,
+        duration: 10,
+        waitToStart: 0,
+        affectedClasses: ['runner'],
+        classes: ['seeker']
+      },
+    ],
+    effectors: [],
+    owner: creatorId,
+    gameMaster: null,
+    players: [
+      {
+        playerId: creatorId,
+        role: 0,
+      },
+    ],
+    gameLogs: [],
+  };
 }
