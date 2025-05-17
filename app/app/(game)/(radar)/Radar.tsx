@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Background from '@c/Background';
+// @ts-ignore
 import { RadarMap } from '@c/Radar/RadarMap';
 import { SocketContext } from '@/socket/socket';
 import { usePlayersUpdater } from '@/hooks/PlayersUpdat';
@@ -44,7 +45,7 @@ export default function RadarScreen() {
           radius: 1800,
           color: '#CC4010',
         }}
-        onPositionUpdate={(lat, lon) => sendMyPosition(lat, lon)}
+        onPositionUpdate={(lat:any, lon:any) => sendMyPosition(lat, lon)}
       />
     </View>
   );

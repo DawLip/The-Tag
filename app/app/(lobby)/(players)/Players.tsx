@@ -3,9 +3,9 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 
 import Button from '@c/Button';
-
-import Logo from '@img/Logo.svg';
+import QRCodeGenerator from '@c/QRCode';
 import { useEffect } from 'react';
+
 
 export default function PlayersScreen() {
   const router = useRouter();
@@ -17,11 +17,11 @@ export default function PlayersScreen() {
 
   return (
     <View className='flex-1 bg-bgc'>
-      <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>THE TAG</Text>
       <View>
         <Text className='text-on_bgc'>Game Code:</Text>
         <Text className='text-on_bgc'>{gameCode}</Text>
       </View>
+      <QRCodeGenerator text={gameCode} />
       <View>
         <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>Players</Text>
         {players?.map((player: any) => (

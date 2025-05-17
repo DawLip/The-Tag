@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import Svg, { Circle, Polygon, Line, G } from 'react-native-svg';
-import * as Location from 'expo-location';
+// import * as Location from 'expo-location';
 
 import {
   toRad,
@@ -57,7 +57,7 @@ interface RadarMapProps {
 }
 
 export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, border, effectors, playerType, onPositionUpdate }) => {
-  const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
+  // const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [smoothHeading, setSmoothHeading] = useState(0);
   const [nearestDistance, setNearestDistance] = useState<number | null>(null);
   const [outOfRangeData, setOutOfRangeData] = useState<{ bearing: number; distance: number; player: Player }[]>([]);
@@ -87,56 +87,56 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
+    // (async () => {
+    //   const { status } = await Location.requestForegroundPermissionsAsync();
+    //   if (status !== 'granted') return;
 
-      await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.High, distanceInterval: 4 },
-        (location) => {
-          const coords = location.coords;
-          setUserLocation(coords);
-          onPositionUpdate?.(coords.latitude, coords.longitude);
-        }
-      );
+    //   await Location.watchPositionAsync(
+    //     { accuracy: Location.Accuracy.High, distanceInterval: 4 },
+    //     (location) => {
+    //       const coords = location.coords;
+    //       setUserLocation(coords);
+    //       onPositionUpdate?.(coords.latitude, coords.longitude);
+    //     }
+    //   );
 
-      const alpha = 0.15;
-      await Location.watchHeadingAsync((data) => {
-        if (data.trueHeading != null) {
-          const newHeading = data.trueHeading;
-          const delta = ((newHeading - lastHeading.current + 540) % 360) - 180;
-          lastHeading.current = (lastHeading.current + alpha * delta + 360) % 360;
-          setSmoothHeading(lastHeading.current);
-        }
-      });
-    })();
+    //   const alpha = 0.15;
+    //   await Location.watchHeadingAsync((data) => {
+    //     if (data.trueHeading != null) {
+    //       const newHeading = data.trueHeading;
+    //       const delta = ((newHeading - lastHeading.current + 540) % 360) - 180;
+    //       lastHeading.current = (lastHeading.current + alpha * delta + 360) % 360;
+    //       setSmoothHeading(lastHeading.current);
+    //     }
+    //   });
+    // })();
   }, []);
 
-  useEffect(() => {
-    if (mapRef.current && userLocation) {
-      // mapRef.current.animateCamera({
-      //   center: { latitude: userLocation.latitude, longitude: userLocation.longitude },
-      //   heading: smoothHeading,
-      //   pitch: 0,
-      //   zoom: calculateZoom(userLocation.latitude)
-      // }, { duration: 200 });
-    }
-  }, [smoothHeading, userLocation]);
+  // useEffect(() => {
+  //   // if (mapRef.current && userLocation) {
+  //     // mapRef.current.animateCamera({
+  //     //   center: { latitude: userLocation.latitude, longitude: userLocation.longitude },
+  //     //   heading: smoothHeading,
+  //     //   pitch: 0,
+  //     //   zoom: calculateZoom(userLocation.latitude)
+  //     // }, { duration: 200 });
+  //   }
+  // }, [smoothHeading, userLocation]);
 
-  useEffect(() => {
-    if (userLocation && players.length > 0) {
-      const newOutOfRange: { player: Player; distance: number; bearing: number }[] = [];
-      const allDistances = players.map((player) => {
-        const distance = calculateDistance(userLocation.latitude, userLocation.longitude, player.latitude, player.longitude);
-        const bearing = calculateBearing(userLocation.latitude, userLocation.longitude, player.latitude, player.longitude);
-        if (distance > MAX_DISTANCE) newOutOfRange.push({ player, distance, bearing });
-        return distance;
-      });
-      setNearestDistance(Math.min(...allDistances));
-      newOutOfRange.sort((a, b) => a.distance - b.distance);
-      setOutOfRangeData(newOutOfRange);
-    }
-  }, [userLocation, players]);
+  // useEffect(() => {
+  //   if (userLocation && players.length > 0) {
+  //     const newOutOfRange: { player: Player; distance: number; bearing: number }[] = [];
+  //     const allDistances = players.map((player) => {
+  //       const distance = calculateDistance(userLocation.latitude, userLocation.longitude, player.latitude, player.longitude);
+  //       const bearing = calculateBearing(userLocation.latitude, userLocation.longitude, player.latitude, player.longitude);
+  //       if (distance > MAX_DISTANCE) newOutOfRange.push({ player, distance, bearing });
+  //       return distance;
+  //     });
+  //     setNearestDistance(Math.min(...allDistances));
+  //     newOutOfRange.sort((a, b) => a.distance - b.distance);
+  //     setOutOfRangeData(newOutOfRange);
+  //   }
+  // }, [userLocation, players]);
 
   const renderPlayerMarkers = () => {
     // return players.map((player, i) => {
@@ -240,7 +240,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
     );
   };
 
-  if (!userLocation) return <View style={styles.mapContainer} />;
+  // if (!userLocation) return <View style={styles.mapContainer} />;
 
   const formattedDistance = nearestDistance != null ? formatDistanceLabel(nearestDistance) : ' ... ';
 

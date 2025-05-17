@@ -1,6 +1,7 @@
 import { Image, StyleSheet, Platform, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
+import QRScanner from '@c/QRScanner';
 import Button from '@c/Button';
 
 import Logo from '@img/Logo.svg';
