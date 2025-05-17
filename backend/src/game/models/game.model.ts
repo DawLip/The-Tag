@@ -23,6 +23,10 @@ export class Area {
   @Field(() => GraphQLJSON)
   @Prop({ type: MongooseSchema.Types.Mixed })
   points: any[];
+
+  @Field()
+  @Prop()
+  radius?: number;
 }
 export const AreaSchema = SchemaFactory.createForClass(Area);
 

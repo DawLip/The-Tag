@@ -26,9 +26,7 @@ export function gameDefault(gameCode: string, creatorId: string) {
           interval: 30,
           roles: [1, 2],
         },
-      ],
-      nTimes: [],
-      renewable: [],
+      ]
     },
     roles: [
       { name: 'Spectator' },
