@@ -30,7 +30,7 @@ const RadarHoldButton: React.FC<Props> = ({ onZoomChange }) => {
   return (
     <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} style={styles.button}>
       <Image
-        source={require('../assets/images/minimize-outline.png')}
+        source={require('@/assets/images/minimize-outline.png')}
         style={styles.icon}
         resizeMode="contain"
       />

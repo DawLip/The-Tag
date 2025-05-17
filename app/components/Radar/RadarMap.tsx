@@ -4,17 +4,27 @@ import MapView, { PROVIDER_GOOGLE, Marker, Polygon as MapPolygon, Circle as MapC
 import Svg, { Circle, Polygon, Line, G } from 'react-native-svg';
 import * as Location from 'expo-location';
 
-import { toRad, calculateDistance, calculateBearing, calculateTransparency, interpolateColor, formatDistanceLabel } from './RadarUtils';
-import RadarHoldButton from '@c/RadarHoldButton'
+import {
+  toRad,
+  calculateDistance,
+  calculateBearing,
+  calculateTransparency,
+  interpolateColor,
+  formatDistanceLabel,
+  convertPointsToCoordinates,
+  generateCirclePolygon
+} from './RadarUtils';
+
+import RadarHoldButton from '@/components/Radar/RadarHoldButton';
 
 const { width } = Dimensions.get('window');
 const RADAR_SIZE = width * 0.9;
 const RADAR_RADIUS = RADAR_SIZE / 2;
 const MAX_DISTANCE = 600;
 
-const HiderColor ='rgb(252, 172, 0)'
-const SeekerColor = 'rgb(252, 80, 0)'
-const Invisible = 'rgba(0, 0, 0, 0)'
+const HiderColor = 'rgb(252, 172, 0)';
+const SeekerColor = 'rgb(252, 80, 0)';
+const Invisible = 'rgba(0, 0, 0, 0)';
 
 interface Player {
   latitude: number;
@@ -22,8 +32,9 @@ interface Player {
   type: string;
 }
 
-interface Poligon {
-  points: number[]; // [lat1, lon1, lat2, lon2, ...]
+interface Border {
+  points: number[];
+  radius: number;
   color: string;
 }
 
@@ -38,42 +49,39 @@ interface Effector {
 }
 
 interface RadarMapProps {
-    playerType: string;
-    maxZoomRadius: number;
-    players: Player[];
-    poligons?: Poligon[];
-    effectors?: Effector[];
-    onPositionUpdate?: (lat: number, lon: number) => void; 
-  }
+  playerType: string;
+  maxZoomRadius: number;
+  players: Player[];
+  border?: Border;
+  effectors?: Effector[];
+  onPositionUpdate?: (lat: number, lon: number) => void;
+}
 
-export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poligons, effectors, playerType, onPositionUpdate }) => {
+export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, border, effectors, playerType, onPositionUpdate }) => {
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [smoothHeading, setSmoothHeading] = useState(0);
   const [nearestDistance, setNearestDistance] = useState<number | null>(null);
-  const [outOfRangeData, setOutOfRangeData] = useState<
-    { bearing: number; distance: number; player: Player }[]
-  >([]);
+  const [outOfRangeData, setOutOfRangeData] = useState<{ bearing: number; distance: number; player: Player }[]>([]);
   const [timeNow, setTimeNow] = useState(Date.now());
   const [zoomOut, setZoomOut] = useState(false);
 
   const lastHeading = useRef(0);
   const mapRef = useRef<MapView>(null);
-  const AssignePlayerColor = (type:string): string =>
-  {
-    if(playerType === 'seeker')
-    {
-        return type === 'seeker'? SeekerColor : HiderColor
+
+  const AssignePlayerColor = (type: string): string => {
+    if (playerType === 'seeker') {
+      return type === 'seeker' ? SeekerColor : HiderColor;
+    } else {
+      return type === 'seeker' ? Invisible : HiderColor;
     }
-    else
-    {
-        return type === 'seeker'? Invisible : HiderColor
-    }
-  }
+  };
+
   const calculateZoom = (latitude: number): number => {
-    const metersPerPixel = (zoomOut? maxZoomRadius : MAX_DISTANCE) / RADAR_RADIUS;
+    const metersPerPixel = (zoomOut ? maxZoomRadius : MAX_DISTANCE) / RADAR_RADIUS;
     const zoom = Math.log2(156543.03392 * Math.cos(latitude * Math.PI / 180) / metersPerPixel);
     return zoom;
   };
+
   useEffect(() => {
     const interval = setInterval(() => setTimeNow(Date.now()), 100);
     return () => clearInterval(interval);
@@ -83,16 +91,16 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
-  
+
       await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High, distanceInterval: 4 },
         (location) => {
           const coords = location.coords;
           setUserLocation(coords);
-          onPositionUpdate?.(coords.latitude, coords.longitude); 
+          onPositionUpdate?.(coords.latitude, coords.longitude);
         }
       );
-  
+
       const alpha = 0.15;
       await Location.watchHeadingAsync((data) => {
         if (data.trueHeading != null) {
@@ -104,7 +112,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
       });
     })();
   }, []);
-  
+
   useEffect(() => {
     if (mapRef.current && userLocation) {
       mapRef.current.animateCamera({
@@ -112,7 +120,6 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
         heading: smoothHeading,
         pitch: 0,
         zoom: calculateZoom(userLocation.latitude)
-
       }, { duration: 200 });
     }
   }, [smoothHeading, userLocation]);
@@ -146,23 +153,27 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
     });
   };
 
-  const renderPoligons = () => {
-    if (!poligons) return null;
-    return poligons.map((poly, i) => {
-      const coordinates = [];
-      for (let j = 0; j < poly.points.length; j += 2) {
-        coordinates.push({ latitude: poly.points[j], longitude: poly.points[j + 1] });
-      }
-      return (
-        <MapPolygon
-          key={`polygon-${i}`}
-          coordinates={coordinates}
-          fillColor={`${poly.color}70`}
-          strokeColor={poly.color}
-          strokeWidth={1}
-        />
-      );
-    });
+    const renderBoarders = () => {
+      if (!border) return null;
+
+      const delta = 0.05;
+      const worldBounds = [
+        { latitude: border.points[0] + delta, longitude: border.points[1] - delta },
+        { latitude: border.points[0] + delta, longitude: border.points[1] + delta },
+        { latitude: border.points[0] - delta, longitude: border.points[1] + delta },
+        { latitude: border.points[0] - delta, longitude: border.points[1] - delta },
+      ];
+    const coordinates = generateCirclePolygon({latitude:border.points[0], longitude:border.points[1]}, border.radius, 64)
+    return (
+      <MapPolygon
+        key={`polygon-border`}
+        coordinates={worldBounds}
+        holes={[coordinates]}
+        fillColor={`${border.color}40`}
+        strokeColor={border.color}
+        strokeWidth={1}
+      />
+    );
   };
 
   const renderEffectors = () => {
@@ -190,7 +201,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
       <Svg height={RADAR_SIZE} width={RADAR_SIZE} style={StyleSheet.absoluteFill}>
         <G transform={`rotate(${-smoothHeading}, ${RADAR_RADIUS}, ${RADAR_RADIUS})`}>
           <Line x1={RADAR_RADIUS} y1={10} x2={RADAR_RADIUS} y2={0} stroke="red" strokeWidth={2} />
-  
+
           {!zoomOut &&
             outOfRangeData.map(({ bearing, player }, index) => {
               const angleRad = toRad(bearing);
@@ -210,22 +221,22 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
                 <Polygon
                   key={`${player.latitude}-${player.longitude}-triangle`}
                   points={points}
-                  fill={AssignePlayerColor(player.type)} 
+                  fill={AssignePlayerColor(player.type)}
                   fillOpacity={transparency}
                   transform={`translate(${xShifted}, ${yShifted}) rotate(${angleToCenter})`}
                 />
               );
             })}
         </G>
-            <Polygon
-            points={`
-                ${RADAR_RADIUS},${RADAR_RADIUS - 8}
-                ${RADAR_RADIUS - 3},${RADAR_RADIUS + 3}
-                ${RADAR_RADIUS + 3},${RADAR_RADIUS + 3}
-            `}
-            fill="#cccccc88"
-            stroke="none"
-            />
+        <Polygon
+          points={`
+              ${RADAR_RADIUS},${RADAR_RADIUS - 8}
+              ${RADAR_RADIUS - 3},${RADAR_RADIUS + 3}
+              ${RADAR_RADIUS + 3},${RADAR_RADIUS + 3}
+          `}
+          fill="#cccccc88"
+          stroke="none"
+        />
       </Svg>
     );
   };
@@ -237,37 +248,36 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
   return (
     <View style={styles.container}>
       <View style={styles.distanceBox}>
-          <Text style={styles.distanceText}>{formattedDistance}</Text>
+        <Text style={styles.distanceText}>{formattedDistance}</Text>
       </View>
 
-        <View style={styles.mapShadow}>
-             <View style={styles.mapContainer}>
-                <MapView
-                ref={mapRef}
-                provider={PROVIDER_GOOGLE}
-                style={styles.map}
-                initialRegion={{
-                    latitude: userLocation.latitude,
-                    longitude: userLocation.longitude,
-                    latitudeDelta: 0.005,
-                    longitudeDelta: 0.005,
-                }}
-                showsUserLocation={false}
-                rotateEnabled
-                scrollEnabled={false}
-                zoomEnabled={false}
-                pitchEnabled={false}
-                toolbarEnabled={false}
-                customMapStyle={darkMapStyle}
-                >
-                {renderPlayerMarkers()}
-                {renderPoligons()}
-                {renderEffectors()}
-                </MapView>
-                {renderRadarOverlay()}
-      </View> 
-    </View>
-
+      <View style={styles.mapShadow}>
+        <View style={styles.mapContainer}>
+          <MapView
+            ref={mapRef}
+            provider={PROVIDER_GOOGLE}
+            style={styles.map}
+            initialRegion={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005,
+            }}
+            showsUserLocation={false}
+            rotateEnabled
+            scrollEnabled={false}
+            zoomEnabled={false}
+            pitchEnabled={false}
+            toolbarEnabled={false}
+            customMapStyle={darkMapStyle}
+          >
+            {renderPlayerMarkers()}
+            {renderBoarders()}
+            {renderEffectors()}
+          </MapView>
+          {renderRadarOverlay()}
+        </View>
+      </View>
 
       <View style={styles.zoomOutBox}>
         <RadarHoldButton onZoomChange={setZoomOut} />
@@ -276,32 +286,31 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, poli
   );
 };
 
-
 const styles = StyleSheet.create({
-    container: {
-        width: RADAR_SIZE + 4,
-        height: RADAR_SIZE + 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-      },
-      mapContainer: {
-        width: RADAR_SIZE,
-        height: RADAR_SIZE,
-        borderRadius: RADAR_RADIUS,
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-      },
-      mapShadow: {
-        borderRadius: RADAR_RADIUS,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.9,
-        shadowRadius: 2, 
-        elevation: 10,
-      },
+  container: {
+    width: RADAR_SIZE + 4,
+    height: RADAR_SIZE + 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  mapContainer: {
+    width: RADAR_SIZE,
+    height: RADAR_SIZE,
+    borderRadius: RADAR_RADIUS,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  mapShadow: {
+    borderRadius: RADAR_RADIUS,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 2,
+    elevation: 10,
+  },
   map: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: RADAR_RADIUS,
@@ -312,18 +321,11 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 10,
   },
-
   zoomOutBox: {
     position: 'absolute',
     bottom: 5,
     right: 0,
     zIndex: 10,
-  },
-  distanceBackground: {
-    backgroundColor: '#000',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
   },
   distanceText: {
     color: 'white',

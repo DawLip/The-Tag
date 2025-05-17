@@ -1,54 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
-import { useRouter } from 'expo-router';
-
+import React, { useState, useContext } from 'react';
+import { View } from 'react-native';
 import { useSelector } from 'react-redux';
-import { useSocket } from '@/socket/socket';
-import { RadarMap } from './RadarMap';
 import Background from '@c/Background';
+import { RadarMap } from '@c/Radar/RadarMap';
+import { SocketContext } from '@/socket/socket';
+import { usePlayersUpdater } from '@/hooks/PlayersUpdat';
 
-import {
-  playerPositionManager,
-  SimplifiedPlayer
-} from './playerPositionManager';
+interface RadarPlayer {
+  latitude: number;
+  longitude: number;
+  type: string;
+}
 
 export default function RadarScreen() {
-  const router = useRouter();
-  const socket = useSocket();
-  const [players, setPlayers] = useState<SimplifiedPlayer[]>([]);
-
+  const socket = useContext(SocketContext);
   const currentUserId = useSelector((state: any) => state.auth.userId);
-  useEffect(() => {
-    if (!socket) return;
+  const gameCode = useSelector((state: any) => state.game.gameCode);
 
-    // Inicjalizacja managera pozycji
-    playerPositionManager.init(socket, currentUserId);
+  const [players, setPlayers] = useState<RadarPlayer[]>([]);
+  const [intervalMs, setIntervalMs] = useState(1000);
 
-    // Rejestruj callback, który ustawia pozycje pozostałych graczy
-    playerPositionManager.onUpdate((updatedPlayers) => {
-      setPlayers(updatedPlayers);
-    });
+  usePlayersUpdater(currentUserId, setPlayers, intervalMs);
 
-  }, [socket]);
-
-  if (!socket) {
-    return (
-      <View className="flex-1 justify-center items-center bg-bgc">
-        <Text>Łączenie z serwerem...</Text>
-      </View>
-    );
-  }
+  const sendMyPosition = (lat: number, lon: number) => {
+    if (socket && socket.connected && gameCode && currentUserId) {
+      socket.emit('pos_update', {
+        gameCode,
+        userId: currentUserId,
+        pos: { lat, lon },
+      });
+    }
+  };
 
   return (
     <View className="flex-1 bg-bgc">
       <Background />
       <RadarMap
         playerType="hider"
-        maxZoomRadius={1800}
+        maxZoomRadius={2500}
         players={players}
-        onPositionUpdate={(lat, lon) => {
-          playerPositionManager.sendMyPosition(lat, lon);
+        border={{
+          points: [50.23130254898192, 18.94595480308516],
+          radius: 1800,
+          color: '#CC4010',
         }}
+        onPositionUpdate={(lat, lon) => sendMyPosition(lat, lon)}
       />
     </View>
   );
