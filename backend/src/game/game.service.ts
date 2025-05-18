@@ -124,8 +124,23 @@ export class GameService {
     console.log("success");
     client.to(gameCode).emit('game_started', { gameCode });
   }
-  async updateGame(data): Promise<any> { 
-    return {}; 
+  async updateGame({ toChange, gameCode }, client): Promise<any> { 
+    console.log("=== updateLobby ===");
+    const lobby = await this.gameModel.findOne({ gameCode: gameCode });
+    
+    if (!lobby) {console.error("Error: game not found"); return { status: "ERROR", msg:"game not found" };}
+    // client.join(gameCode);
+    
+    console.log(`${Date.now()} [WS] Emitting 'lobby_update' to ${gameCode}:`, { toChange });
+    client.emit('lobby_update', { toChange, gameCode }); 
+    client.to(gameCode).emit('lobby_update', { toChange, gameCode });
+    for (const key in toChange) {
+      if (key !== '_id') {
+        lobby[key] = toChange[key];
+      }
+    }
+    
+    await lobby.save();
   }
   async updatePos({gameCode, userId, pos}, client:Socket): Promise<any> { 
     console.log(`User ${userId} update pos: ${pos}`);

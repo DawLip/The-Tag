@@ -60,8 +60,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   @SubscribeMessage('game_update')
-  gameUpdate(@MessageBody() data: { gameCode: string; data: any }, @ConnectedSocket() client: Socket) {
-    return this.gameService.updateGame(data);
+  gameUpdate(@MessageBody() data: { gameCode: string; toChange: any }, @ConnectedSocket() client: Socket) {
+    return this.gameService.updateGame(data, client);
   }
 
   @SubscribeMessage('pos_update')
