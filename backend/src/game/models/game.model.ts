@@ -149,9 +149,9 @@ export class Game {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   gameMaster: Types.ObjectId;
 
-  @Field(() => [Effector])
+  @Field(() => [Skill])
   @Prop({ type: [EffectorSchema] })
-  skills: Effector[];
+  skills: Skill[];
 
   @Field(() => [Effector])
   @Prop({ type: [EffectorSchema] })
