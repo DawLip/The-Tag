@@ -11,7 +11,7 @@ interface GameState {
   owner: string;
   gameMaster: string | null;
   spectators: any[];
-  players: any[]; // Można to zastąpić np. Player[] jeśli masz interfejs
+  players: any[]; 
   gameLogs: any[];
 }
 
@@ -43,8 +43,16 @@ const gameSlice = createSlice({
     gameStarted: (state, action: PayloadAction<any>) => {
       state.status = 'STARTED';
     },
+    lobbyUpdate: (state:any, action: PayloadAction<any>) => {
+      console.log('lobbyUpdate gameslice');
+      for (const key in action.payload.toChange) {
+        if (key !== '_id') {
+          state[key] = action.payload.toChange[key];
+        }
+      }
+    },
   },
 });
 
-export const { joinLobby, userJoined, gameStarted } = gameSlice.actions;
+export const { joinLobby, userJoined, gameStarted, lobbyUpdate } = gameSlice.actions;
 export default gameSlice.reducer;

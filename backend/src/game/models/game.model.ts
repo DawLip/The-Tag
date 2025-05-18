@@ -125,6 +125,10 @@ export class Game {
   @Prop({ type: [String] })
   rules: string[];
 
+  @Field(() => [GraphQLJSON])
+  @Prop({ type: [MongooseSchema.Types.Mixed] })
+  roles: any[];
+
   @Field(() => GraphQLJSON)
   @Prop({ type: MongooseSchema.Types.Mixed })
   settings: Record<string, any>;

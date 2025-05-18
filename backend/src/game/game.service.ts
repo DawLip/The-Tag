@@ -49,11 +49,16 @@ export class GameService {
   
     return { status: 'SUCCESS', game: await this.populatePlayers(game) };
   }
-  async updateLobby({ toChange, gameCode }): Promise<any> {
+  async updateLobby({ toChange, gameCode }, client): Promise<any> {
+    console.log("=== updateLobby ===");
     const lobby = await this.gameModel.findOne({ gameCode: gameCode });
     
-    if (!lobby) return { status: "ERROR", msg:"game not found" }
-
+    if (!lobby) {console.error("Error: game not found"); return { status: "ERROR", msg:"game not found" };}
+    // client.join(gameCode);
+    
+    console.log(`${Date.now()} [WS] Emitting 'lobby_update' to ${gameCode}:`, { toChange });
+    client.emit('lobby_update', { toChange, gameCode }); 
+    client.to(gameCode).emit('lobby_update', { toChange, gameCode });
     for (const key in toChange) {
       if (key !== '_id') {
         lobby[key] = toChange[key];
@@ -61,9 +66,8 @@ export class GameService {
     }
     
     await lobby.save();
-    return lobby;
   }
-  async updateLobbySettings({ toChange, gameCode }): Promise<any> {
+  async updateLobbySettings({ toChange, gameCode }, client): Promise<any> {
     const lobby = await this.gameModel.findOne({ gameCode: gameCode });
     
     if (!lobby) return { status: "ERROR", msg:"game not found" }
@@ -73,8 +77,8 @@ export class GameService {
         lobby.settings[key] = toChange[key];
       }
     }
-    
     await lobby.save();
+
     return lobby;
   }
   async joinLobby({gameCode, _id}:JoinGameInput, client): Promise<any> { 
