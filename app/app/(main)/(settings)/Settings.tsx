@@ -10,7 +10,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const handleLogout = () => { dispatch(logout()); router.push('/(auth)/Login');};
+  const handleLogout = () => { dispatch(logout()); router.push('/(auth)/Login'); };
 
   return (
     <View className='flex-1 bg-bgc'>

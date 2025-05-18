@@ -32,6 +32,30 @@ export class RegisterInput {
 }
 
 @InputType()
+export class ChangePassowordInput {
+  @Field()
+  userID: string;
+
+  @Field()
+  newPassword: string;
+
+  @Field()
+  oldPassword: string;
+}
+
+@InputType()
+export class ChangeEmailInput {
+  @Field()
+  userID: string;
+
+  @Field()
+  newEmail: string;
+
+  @Field()
+  password: string;
+}
+
+@InputType()
 export class ModifyFriendListInput {
   @Field(type=> Int)
   userId: number;

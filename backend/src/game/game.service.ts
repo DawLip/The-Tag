@@ -40,9 +40,9 @@ export class GameService {
   }
 
   // === Lobby ===
-  async createLobby(creatorId, client): Promise<any> { 
+  async createLobby(data, creatorId, client): Promise<any> { 
     const gameCode = this.generateGameCode();
-    const createdLobby = new this.gameModel(gameDefault(gameCode, creatorId));
+    const createdLobby = new this.gameModel(gameDefault(gameCode,data.name, creatorId));
     console.log(`Created lobby ${createdLobby._id}`);
     client.join(gameCode);
     const game = (await createdLobby.save()).toObject();

@@ -1,6 +1,6 @@
-export function gameDefault(gameCode: string, creatorId: string) {
+export function gameDefault(gameCode: string, name: string, creatorId: string) {
   return {
-    name: 'New lobby',
+    name: name || 'New Game',
     description: 'Lobby for the game',
     gameCode: gameCode,
     status: 'LOBBY',

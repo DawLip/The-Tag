@@ -5,7 +5,7 @@ import { User } from "./models/user.model";
 import { UsersService } from "./users.service";
 import { AuthService } from '../auth/auth.service';
 
-import { RegisterInput, LoginInput, ModifyFriendListInput, GetUserInput } from "./dto/user.input";
+import { RegisterInput, LoginInput, ModifyFriendListInput, GetUserInput, ChangePassowordInput, ChangeEmailInput } from "./dto/user.input";
 import { UserWithToken, Status } from "./dto/user.dto";
 import { Public } from "src/auth/auth.public";
 
@@ -33,6 +33,15 @@ export class UsersResolver {
   async register(@Args('input') input: RegisterInput) {
     const createdUser = await this.usersService.register(input);
     return createdUser;
+  }
+
+  @Mutation(() => Status)
+  async changePassword(@Args('input') input: ChangePassowordInput) {
+    return await this.usersService.changePassword(input);
+  }
+  @Mutation(() => Status)
+  async changeEmail(@Args('input') input: ChangeEmailInput) {
+    return await this.usersService.changeEmail(input);
   }
 
   @Mutation(() => Status)

@@ -37,7 +37,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   @SubscribeMessage('create_lobby')
   createGame(@MessageBody() data, @ConnectedSocket() client: Socket) {
-    return this.gameService.createLobby(client.data.user._id, client);
+    return this.gameService.createLobby(data, client.data.user._id, client);
   }
 
   @SubscribeMessage('lobby_update')

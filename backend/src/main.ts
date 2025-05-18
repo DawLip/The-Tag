@@ -10,9 +10,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: '*',  // Adres IP urządzenia mobilnego (Expo Go)
-    methods: 'GET,POST',
-    allowedHeaders: 'Content-Type',
+    origin: '*', 
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
 
   app.use('/altair', altairExpress({

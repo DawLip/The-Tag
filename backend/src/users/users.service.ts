@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './models/user.model';
-import { RegisterInput, ModifyFriendListInput, GetUserInput } from "./dto/user.input";
+import { RegisterInput, ModifyFriendListInput, GetUserInput, ChangePassowordInput, ChangeEmailInput } from "./dto/user.input";
 import { UserWithToken } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
 
@@ -12,7 +12,7 @@ export type U = any;
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   async create(input: RegisterInput): Promise<User> {
@@ -23,6 +23,24 @@ export class UsersService {
     const user = await this.create(input);
     const access_token = await this.jwtService.sign({_id: user._id})
     return { status: "SUCCESS", access_token, user };
+  }
+
+  async changePassword({userID, newPassword, oldPassword}: ChangePassowordInput):Promise<any> {
+    const user = await this.findOneById(userID);
+    
+    if(!user || user.password!=oldPassword)  return { status: "WRONG_EMAIL_OR_PASSWORD" };
+    this.userModel.updateOne({ userID }, { password: newPassword }).exec();
+
+    return { status: "SUCCESS" };
+  }
+
+  async changeEmail({userID, newEmail, password}: ChangeEmailInput):Promise<any> {
+    const user = await this.findOneById(userID);
+
+    if(!user || user.password!=password) return { status: "WRONG_EMAIL_OR_PASSWORD" };
+    await this.userModel.updateOne({ userID }, { email: newEmail }).exec();
+
+    return { status: "SUCCESS" };
   }
   
   async findOne({_id, email}:GetUserInput): Promise<U | undefined | null> {
