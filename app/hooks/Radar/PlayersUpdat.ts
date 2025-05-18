@@ -8,6 +8,7 @@ interface RawPlayer {
 }
 
 interface RadarPlayer {
+  userId: string;
   latitude: number;
   longitude: number;
   type: string;
@@ -43,6 +44,7 @@ export function usePlayersUpdater(
 
     const timer = setInterval(() => {
       const formatted: RadarPlayer[] = Object.values(playersRef.current).map((p) => ({
+        userId: p.userId,
         latitude: p.lat,
         longitude: p.lon,
         type: 'hider',

@@ -1,12 +1,16 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Background from '@c/Background';
 import { RadarMap } from '@c/Radar/RadarMap';
 import { SocketContext } from '@/socket/socket';
-import { usePlayersUpdater } from '@/hooks/PlayersUpdat';
+
+import { usePlayersUpdater } from '@/hooks/Radar/PlayersUpdat';
+import { getGameCenter } from '@/hooks/Radar/getGameCenter';
+import { useCheckOutOfBounds } from '@/hooks/Radar/useCheckOutOfBounds';
 
 interface RadarPlayer {
+  userId: string;
   latitude: number;
   longitude: number;
   type: string;
@@ -16,13 +20,19 @@ export default function RadarScreen() {
   const socket = useContext(SocketContext);
   const currentUserId = useSelector((state: any) => state.auth.userId);
   const gameCode = useSelector((state: any) => state.game.gameCode);
+  const gameOwner = useSelector((state: any) => state.game.owner);
 
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
   const [intervalMs, setIntervalMs] = useState(1000);
+  const [myPosition, setMyPosition] = useState<[number, number] | null>(null);
 
   usePlayersUpdater(currentUserId, setPlayers, intervalMs);
 
+  const center = getGameCenter(players, gameOwner, currentUserId, myPosition);
+  const fallbackCenter: [number, number] = [50.2313, 18.9459];
+
   const sendMyPosition = (lat: number, lon: number) => {
+    setMyPosition([lat, lon]);
     if (socket && socket.connected && gameCode && currentUserId) {
       socket.emit('pos_update', {
         gameCode,
@@ -32,6 +42,13 @@ export default function RadarScreen() {
     }
   };
 
+  const handleOutOfBounds = useCallback(() => {
+    console.warn('Gracz wyszedł poza granice!');
+    //puki co bez efektu
+  }, []);
+
+  useCheckOutOfBounds(myPosition, center ?? fallbackCenter, 1800, handleOutOfBounds);
+
   return (
     <View className="flex-1 bg-bgc">
       <Background />
@@ -40,7 +57,7 @@ export default function RadarScreen() {
         maxZoomRadius={2500}
         players={players}
         border={{
-          points: [50.23130254898192, 18.94595480308516],
+          points: center ?? fallbackCenter,
           radius: 1800,
           color: '#CC4010',
         }}

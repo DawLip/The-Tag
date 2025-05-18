@@ -26,6 +26,7 @@ const HiderColor = 'rgb(252, 172, 0)';
 const SeekerColor = 'rgb(252, 80, 0)';
 const Invisible = 'rgba(0, 0, 0, 0)';
 
+
 interface Player {
   latitude: number;
   longitude: number;
@@ -68,13 +69,6 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
   const lastHeading = useRef(0);
   const mapRef = useRef<MapView>(null);
 
-  const AssignePlayerColor = (type: string): string => {
-    if (playerType === 'seeker') {
-      return type === 'seeker' ? SeekerColor : HiderColor;
-    } else {
-      return type === 'seeker' ? Invisible : HiderColor;
-    }
-  };
 
   const calculateZoom = (latitude: number): number => {
     const metersPerPixel = (zoomOut ? maxZoomRadius : MAX_DISTANCE) / RADAR_RADIUS;
@@ -122,22 +116,53 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
         zoom: calculateZoom(userLocation.latitude)
       }, { duration: 200 });
     }
-  }, [smoothHeading, userLocation]);
-
+  }, [smoothHeading, userLocation, zoomOut]);
+  
+  const isPlayerVisible = (player: Player, currentPlayerType: string): boolean => {
+    if (currentPlayerType === 'seeker') {
+      return true; // seeker widzi wszystkich
+    } else {
+      return player.type !== 'seeker'; // inni nie widzą seekerów
+    }
+  };
+  const getPlayerColor = (player: Player, currentPlayerType: string): string => {
+    const HiderColor = 'rgb(252, 172, 0)';
+    const SeekerColor = 'rgb(252, 80, 0)';
+    const Invisible = 'rgba(0, 0, 0, 0)';
+  
+    if (!isPlayerVisible(player, currentPlayerType)) {
+      return Invisible;
+    }
+  
+    if (currentPlayerType === 'seeker') {
+      return player.type === 'seeker' ? SeekerColor : HiderColor;
+    } else {
+      return HiderColor;
+    }
+  };
   useEffect(() => {
     if (userLocation && players.length > 0) {
       const newOutOfRange: { player: Player; distance: number; bearing: number }[] = [];
-      const allDistances = players.map((player) => {
+  
+      const visiblePlayers = players.filter(player => isPlayerVisible(player, playerType));
+ 
+      const allDistances = visiblePlayers.map((player) => {
         const distance = calculateDistance(userLocation.latitude, userLocation.longitude, player.latitude, player.longitude);
         const bearing = calculateBearing(userLocation.latitude, userLocation.longitude, player.latitude, player.longitude);
         if (distance > MAX_DISTANCE) newOutOfRange.push({ player, distance, bearing });
         return distance;
       });
-      setNearestDistance(Math.min(...allDistances));
+  
+      if (allDistances.length > 0) {
+        setNearestDistance(Math.min(...allDistances));
+      } else {
+        setNearestDistance(null); 
+      }
       newOutOfRange.sort((a, b) => a.distance - b.distance);
       setOutOfRangeData(newOutOfRange);
     }
-  }, [userLocation, players]);
+  }, [userLocation, players, playerType]);
+
 
   const renderPlayerMarkers = () => {
     return players.map((player, i) => {
@@ -145,7 +170,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
       if (distance <= MAX_DISTANCE) {
         return (
           <Marker key={`player-${i}`} coordinate={{ latitude: player.latitude, longitude: player.longitude }} anchor={{ x: 0.25, y: 0.25 }} flat={true}>
-            <Svg height={20} width={20}><Circle cx={10} cy={10} r={3} fill={AssignePlayerColor(player.type)} /></Svg>
+            <Svg height={20} width={20}><Circle cx={10} cy={10} r={3} fill={getPlayerColor(player, playerType)} /></Svg>
           </Marker>
         );
       }
@@ -221,7 +246,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
                 <Polygon
                   key={`${player.latitude}-${player.longitude}-triangle`}
                   points={points}
-                  fill={AssignePlayerColor(player.type)}
+                  fill={getPlayerColor(player, playerType)}
                   fillOpacity={transparency}
                   transform={`translate(${xShifted}, ${yShifted}) rotate(${angleToCenter})`}
                 />
