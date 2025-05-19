@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
 
   logo: {
-    width: 297,
+    // width: 297,
     height: 354,
     marginTop: 32,
     marginBottom: -24,

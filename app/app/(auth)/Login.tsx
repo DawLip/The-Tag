@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
 import { useState, useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ import Button from '@c/Button';
 import TextInput from '@c/inputs/TextInput';
 import AssistiveChip from '@c/AssistiveChip';
 import Background from '@c/Background';
+import { StatusBar } from 'expo-status-bar';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -25,58 +26,61 @@ export default function LoginScreen() {
   useEffect(() => { dispatch(setError('')) }, []);
 
   return (
-    <View style={styles.container}>
-      <Background />
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="light" backgroundColor="#262626" />
 
-      <View style={styles.content}>
-        <View style={styles.inputSection}>
-          <TextInput
-            label="Email"
-            value={email}
-            placeholder="Your email"
-            setValue={setEmail}
-          />
-          <TextInput
-            label="Password"
-            value={password}
-            placeholder="Password"
-            setValue={setPassowrd}
-            isPassword={true}
-          />
-        </View>
+      <View style={styles.container}>
+        <Background />
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={styles.content}>
+          <View style={styles.inputSection}>
+            <TextInput
+              label="Email"
+              value={email}
+              placeholder="Your email"
+              setValue={setEmail}
+            />
+            <TextInput
+              label="Password"
+              value={password}
+              placeholder="Password"
+              setValue={setPassowrd}
+              isPassword={true}
+            />
+          </View>
 
-        <View style={styles.buttonGroup}>
-          <Button
-            label="LOG IN"
-            onPress={() => dispatch(loginThunk({ email, password }))}
-            textStyle={{ fontSize: 20 }}
-          />
-          <AssistiveChip
-            label="Forgot password"
-            variant="OUTLINE-WHITE"
-            onPress={() => router.push('/(auth)/ForgotPassword')}
-            style={{ marginTop: 16 }}
-          />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          <View style={styles.buttonGroup}>
+            <Button
+              label="LOG IN"
+              onPress={() => dispatch(loginThunk({ email, password }))}
+              textStyle={{ fontSize: 20 }}
+            />
+            <AssistiveChip
+              label="Forgot password"
+              variant="OUTLINE-WHITE"
+              onPress={() => router.push('/(auth)/ForgotPassword')}
+              style={{ marginTop: 16 }}
+            />
+          </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
-const { width, height } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#262626',
+  },
   container: {
     flex: 1,
-    width: width,
-    height: height,
+    width: '100%',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    //paddingHorizontal: 48,
-   // backgroundColor: '#1E1E1E',
   },
   content: {
     width: 297,
@@ -90,8 +94,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
     padding: 0,
-    gap:12,
-    marginTop:75,
+    gap: 12,
+    marginTop: 75,
   },
   buttonGroup: {
     width: 297,

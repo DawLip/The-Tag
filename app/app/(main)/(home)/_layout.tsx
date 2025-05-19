@@ -1,17 +1,15 @@
-import { Tabs, Stack } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Stack } from 'expo-router';
+import { SafeAreaView } from 'react-native';
+import { defaultHeaderOptions } from '@c/HeaderLayout';
 
 export default function TabLayout() {
-
   return (
-    <SafeAreaView style={{flex: 1}} className='bg-bgc'>
-      <Stack>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#262626' }}>
+      <Stack screenOptions={defaultHeaderOptions}>
         <Stack.Screen name="Home" options={{ headerShown: false }} />
-        <Stack.Screen name="JoinGameCode" options={{}} />
-        <Stack.Screen name="JoinQRCode" options={{}} />
+        <Stack.Screen name="JoinGameCode" options={{title: 'GAME CODE'}} />
+        <Stack.Screen name="JoinQRCode" options={{title: 'QR CODE'}} />
       </Stack>
     </SafeAreaView>
   );
