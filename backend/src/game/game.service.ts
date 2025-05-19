@@ -100,16 +100,24 @@ export class GameService {
     console.log(`success`)
     return { status: 'SUCCESS', game: await this.populatePlayers(game) };
   }
-  async leaveLobby({gameCode, _id}:JoinGameInput): Promise<any> { 
+  async leaveLobby({gameCode, _id}:JoinGameInput, client): Promise<any> { 
     console.log(`User ${_id} pretends to leave lobby ${gameCode}`);
     const lobby = await this.gameModel.findOne({gameCode});
 
     if(!lobby) return { status:"ERROR", msg:"game not found" }
     if(!_id) return {status:"ERROR", msg:"_id must be passed"}
 
-    // lobby.spectators = lobby.spectators.filter(s => s!=_id);
+    // client.leave(gameCode);
+
+    lobby.players = lobby.players.filter(player => player.playerId!=_id);
     lobby.save();
 
+    client.to(gameCode).emit('lobby_update', { toChange:{players:lobby.players}, gameCode });
+
+    return { status:"SUCCESS" }; 
+  }
+  async leaveLobbyRoom({gameCode, _id}:JoinGameInput, client): Promise<any> { 
+    client.leave(gameCode);
     return { status:"SUCCESS" }; 
   }
 

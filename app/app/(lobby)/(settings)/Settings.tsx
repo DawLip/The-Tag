@@ -18,7 +18,9 @@ export default function LobbySettingsScreen() {
 
   const [saveTime, setSaveTime] = useState(5);
 
+  const userId = useSelector((state: any) => state.auth.userId);
   const gameCode = useSelector((state: any) => state.game.gameCode);
+  const owner = useSelector((state: any) => state.game.owner);
   const settings = useSelector((state: any) => state.game.settings);
 
   const settingsNames = [
@@ -38,6 +40,12 @@ export default function LobbySettingsScreen() {
     socket?.emit('lobby_update', {toChange:{settings:{...settings, [settingName]:e}}, gameCode})
   }
 
+  const handleLeaveLobby = () => { 
+    socket?.emit('leave_lobby', {gameCode}); 
+    socket?.emit('leave_lobby_room', {gameCode}); 
+    router.replace('/(main)/(home)/Home');
+  }
+
   return (
     <View className='flex-1 bg-bgc'>
       <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>Settings</Text>
@@ -46,7 +54,10 @@ export default function LobbySettingsScreen() {
           <NumInput label={settingName.label} value={settings[settingName.name]} setValue={(e:any)=>setSetting(e, settingName.name)}/>
         ))}
       </View>
-      <Button label="Start game" onPress={handleStartGame}/>
+      <Button label="Leave lobby" onPress={handleLeaveLobby}/>
+      { owner == userId && 
+        <Button label="Start game" onPress={handleStartGame}/>
+      }
     </View>
   );
 }

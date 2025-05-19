@@ -7,13 +7,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/socket/socket';
 import { AppDispatch } from '@/store';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { gameStarted, lobbyUpdate, userJoined } from '@/store/slices/gameSlice';
 
 export default function TabLayout() {
   const router = useRouter();
   const socket = useSocket();
   const dispatch = useDispatch<AppDispatch>();
+
+  const userId = useSelector((state: any) => state.auth.userId);
+  const gameCode = useSelector((state: any) => state.game.gameCode);
 
   useAuth();
 
@@ -22,6 +25,16 @@ export default function TabLayout() {
     const user_joined = (data:any) => {dispatch(userJoined(data))};
     const lobby_update = (data:any) => {
       console.log('Layout lobby_update');
+
+      for(const key in data.toChange) {
+        if(key === 'players') {
+          if(!data.toChange.players.some((player:any) => player._id === userId)){
+            socket?.emit('leave_lobby_room', {gameCode}); 
+            router.replace('/(main)/(home)/Home');
+          }
+        }
+      }
+
       dispatch(lobbyUpdate(data))
     };
     const game_started = (data:any) => {

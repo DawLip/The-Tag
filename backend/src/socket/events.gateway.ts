@@ -51,7 +51,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
   @SubscribeMessage('leave_lobby')
   leaveLobby(@MessageBody() data: JoinGameInput, @ConnectedSocket() client: Socket) {
-    return this.gameService.leaveLobby({_id: client.data.user._id, ...data});
+    return this.gameService.leaveLobby({_id: data._id || client.data.user._id, ...data}, client);
+  }
+
+  @SubscribeMessage('leave_lobby_room')
+  leaveLobbyRoom(@MessageBody() data: JoinGameInput, @ConnectedSocket() client: Socket) {
+    return this.gameService.leaveLobbyRoom(data, client);
   }
 
   @SubscribeMessage('start_game')
@@ -71,7 +76,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   @SubscribeMessage('leave_game')
   leaveGame(@MessageBody() gameCode: string, @ConnectedSocket() client: Socket) {
-    return this.gameService.leaveLobby({gameCode});
+    return this.gameService.leaveLobby({gameCode}, client);
   }
 
   // === Other events ===
