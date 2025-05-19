@@ -60,7 +60,7 @@ const PlayersListByRole = ({ role, i }: any) => {
 
   return (
     <View>
-      <TouchableOpacity onPress={changeRole}>
+      <TouchableOpacity onPress={()=>changeRole(i)}>
         <Text className='text-on_bgc' style={{ fontFamily: 'Aboreto' }}>{role.name}s</Text>
       </TouchableOpacity>
       {players.filter((player: any) => player.role == i).map((player: any) => (
