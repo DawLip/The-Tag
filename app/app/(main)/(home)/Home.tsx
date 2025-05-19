@@ -1,17 +1,14 @@
 import { useSocket } from '@/socket/socket';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Image, StyleSheet, Platform, View, Text } from 'react-native';
+import { StyleSheet,Pressable, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import Button from '@c/Button';
-
-import Logo from '@img/Logo.svg';
+import Background from '@c/Background';
 
 export default function HomeScreen() {
   const router = useRouter();
   const socket = useSocket();
-
   const token = useSelector((state: any) => state.auth.token);
 
   useEffect(() => {
@@ -33,16 +30,86 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View className='flex-1 bg-bgc'>
-      <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>THE TAG</Text>
-      <View>
-        <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>Join game by</Text>
-        <View>
-          <Button label="Game Code" onPress={()=>router.push('/(main)/(home)/JoinGameCode')}/>
-          <Button label="QR Code" onPress={()=>router.push('/(main)/(home)/JoinQRCode')}/>
-        </View>
+    <View style={styles.container}>
+      <Background />
+
+      <Text style={styles.title}>THE TAG</Text>
+
+      <Text style={styles.section}>JOIN GAME BY:</Text>
+
+      <View style={styles.row}>
+        <GameButton label="GAME CODE" onPress={() => router.push('/(main)/(home)/JoinGameCode')} />
+        <GameButton label="QR CODE" onPress={() => router.push('/(main)/(home)/JoinQRCode')} />
+      </View>
+
+      <Text style={styles.section}>CURRENT EVENTS:</Text>
+
+      <View style={styles.row}>
+        <GameButton label="TURBO" onPress={() => {}} />
+        <GameButton label="THE MONKEY" onPress={() => {}} />
       </View>
     </View>
   );
 }
 
+function GameButton({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable style={styles.button} onPress={onPress}>
+      <Text style={styles.buttonText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#262626',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 24,
+  },
+  title: {
+    fontFamily: 'Aboreto',
+    fontSize: 64,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 4,
+    marginBottom: 16,
+  },
+  section: {
+    fontFamily: 'Aboreto',
+    fontSize: 18,
+    color: '#FFFFFF',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 24,
+  },
+  button: {
+    width: 140.5,
+    height: 80,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    backgroundColor: '#343437',
+    borderColor: '#000000',
+    borderWidth: 1,
+    borderRadius: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 3,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontFamily: 'Aboreto',
+    fontSize: 16,
+  },
+});
