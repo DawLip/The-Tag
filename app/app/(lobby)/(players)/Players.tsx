@@ -25,7 +25,7 @@ export default function PlayersScreen() {
         <Text className='text-on_bgc'>Game Code:</Text>
         <Text className='text-on_bgc'>{gameCode}</Text>
       </View>
-      <QRCodeGenerator text={gameCode} />
+      {/* <QRCodeGenerator text={gameCode} /> */}
       <View>
         {game.roles?.map((role: any, i: number) => (
           <PlayersListByRole key={role.name} role={role} i={i} />
