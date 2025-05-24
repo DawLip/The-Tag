@@ -44,6 +44,18 @@ export class ChangePassowordInput {
 }
 
 @InputType()
+export class ChangePassowordViaEmailInput {
+  @Field()
+  email: string;
+
+  @Field()
+  resetPasswordToken: string;
+
+  @Field()
+  newPassword: string;
+}
+
+@InputType()
 export class ChangeEmailInput {
   @Field()
   userID: string;

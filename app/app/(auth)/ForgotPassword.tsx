@@ -4,11 +4,29 @@ import Button from '@c/Button';
 import TextInput from '@c/inputs/TextInput';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { queryGraphQL } from '@/utils/mutateGraphQL';
+import { useSelector } from 'react-redux';
+import { gql } from '@apollo/client';
 
 
 export default function HomeScreen() {
   const [email, setEmail] = useState('');
   const router = useRouter();
+  const token = useSelector((state: any) => state.auth.token);
+
+
+  const resetPassword = () => {
+    const RESET_PASSWORD = gql`
+      mutation resetPassword($email: String!) {
+        resetPassword(email: $email) {
+          status
+        }
+      }
+    `;
+
+    queryGraphQL(RESET_PASSWORD, {email: email}, token)
+    router.push('/(auth)/ChangePassword')
+  }
 
   return (
     <View style={styles.container}>
@@ -25,7 +43,7 @@ export default function HomeScreen() {
         <Button
         
           label="Send email"
-          onPress={() => router.push('/(auth)/ChangePassword')}
+          onPress={resetPassword}
           textStyle={{ fontSize: 20 }}
         
         />

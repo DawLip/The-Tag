@@ -5,7 +5,7 @@ import { User } from "./models/user.model";
 import { UsersService } from "./users.service";
 import { AuthService } from '../auth/auth.service';
 
-import { RegisterInput, LoginInput, ModifyFriendListInput, GetUserInput, ChangePassowordInput, ChangeEmailInput } from "./dto/user.input";
+import { RegisterInput, LoginInput, ModifyFriendListInput, GetUserInput, ChangePassowordViaEmailInput, ChangePassowordInput, ChangeEmailInput } from "./dto/user.input";
 import { UserWithToken, Status } from "./dto/user.dto";
 import { Public } from "src/auth/auth.public";
 
@@ -39,6 +39,11 @@ export class UsersResolver {
   async changePassword(@Args('input') input: ChangePassowordInput) {
     return await this.usersService.changePassword(input);
   }
+  @Public()
+  @Mutation(() => Status)
+  async changePasswordViaEmail(@Args('input') input: ChangePassowordViaEmailInput) {
+    return await this.usersService.changePasswordViaEmail(input);
+  }
   @Mutation(() => Status)
   async changeEmail(@Args('input') input: ChangeEmailInput) {
     return await this.usersService.changeEmail(input);
@@ -57,6 +62,12 @@ export class UsersResolver {
   @Mutation(() => Status)
   async removeFriend(@Args('input') input: ModifyFriendListInput) {
     return await this.usersService.removeFriend(input);
+  }
+
+  @Public()
+  @Mutation(() => Status)
+  async resetPassword(@Args('email') email: string) {
+    return await this.usersService.resetPassword(email);
   }
 
   @ResolveField()

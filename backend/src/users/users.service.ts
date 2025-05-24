@@ -1,8 +1,9 @@
+import * as nodemailer from 'nodemailer';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './models/user.model';
-import { RegisterInput, ModifyFriendListInput, GetUserInput, ChangePassowordInput, ChangeEmailInput } from "./dto/user.input";
+import { RegisterInput, ModifyFriendListInput, GetUserInput, ChangePassowordViaEmailInput, ChangePassowordInput, ChangeEmailInput } from "./dto/user.input";
 import { UserWithToken } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
 
@@ -30,6 +31,18 @@ export class UsersService {
     
     if(!user || user.password!=oldPassword)  return { status: "WRONG_EMAIL_OR_PASSWORD" };
     this.userModel.updateOne({ userID }, { password: newPassword }).exec();
+
+    return { status: "SUCCESS" };
+  }
+  
+  async changePasswordViaEmail({email, resetPasswordToken, newPassword}: ChangePassowordViaEmailInput):Promise<any> {
+    console.log('changePasswordViaEmail')
+    const user = await this.findOneByEmail(email);
+
+    if(!user) return { status: "EMAIL_NOT_FOUND" };
+    if(resetPasswordToken!=user._id) return { status: "WRONG_RESET_PASSWORD_TOKEN" };
+
+    this.userModel.updateOne({ _id: user._id }, { password: newPassword }).exec();
 
     return { status: "SUCCESS" };
   }
@@ -77,5 +90,32 @@ export class UsersService {
     
     if (res.modifiedCount === 0) return { status: "USER_NOT_FOUND" }
     return { status: "SUCCESS" }
+  }
+
+  async resetPassword(email:string): Promise<any> {
+    const user = await this.findOneByEmail(email);
+    console.log(email)
+    console.log(user)
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: '8dd27a001@smtp-brevo.com',
+        pass: 'Kv9RAtsw0M1qP46O', 
+      },
+    });
+
+    const res = await transporter.sendMail({
+      from: 'd.lipinski022@gmail.com',
+      to: email,
+      subject: 'The Tag - Reset password',
+      text: `Oto twój kod do resetowania hasła: ${user._id}`,
+    });
+
+    console.log(res)
+
+    return { status: "SUCCESS" };
   }
 }
