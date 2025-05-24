@@ -22,11 +22,6 @@ const RADAR_SIZE = width * 0.9;
 const RADAR_RADIUS = RADAR_SIZE / 2;
 const MAX_DISTANCE = 600;
 
-const HiderColor = 'rgb(252, 172, 0)';
-const SeekerColor = 'rgb(252, 80, 0)';
-const Invisible = 'rgba(0, 0, 0, 0)';
-
-
 interface Player {
   latitude: number;
   longitude: number;
@@ -50,6 +45,7 @@ interface Effector {
 }
 
 interface RadarMapProps {
+  playerHP: number;
   playerType: number;
   maxZoomRadius: number;
   players: Player[];
@@ -58,7 +54,7 @@ interface RadarMapProps {
   onPositionUpdate?: (lat: number, lon: number) => void;
 }
 
-export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, border, effectors, playerType, onPositionUpdate }) => {
+export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, players, border, effectors, playerType, onPositionUpdate }) => {
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [smoothHeading, setSmoothHeading] = useState(0);
   const [nearestDistance, setNearestDistance] = useState<number | null>(null);
@@ -184,7 +180,8 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
     const renderBoarders = () => {
       if (!border) return null;
 
-      const delta = 0.05;
+      const delta = border.radius / 36000 + 0.001;
+
       const worldBounds = [
         { latitude: border.points[0] + delta, longitude: border.points[1] - delta },
         { latitude: border.points[0] + delta, longitude: border.points[1] + delta },
@@ -279,6 +276,15 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
         <Text style={styles.distanceText}>{formattedDistance}</Text>
       </View>
 
+      <View style={styles.infoBox}>
+        <Text style={styles.infoText}>{playerType === 1 ? 'Seeker' : playerType === 2 ? 'Runner' : 'Spectator'}</Text>
+        <View style={{ width: 40}}>
+          {playerType !== 0 && (
+            <Text style={styles.infoText}>HP: {playerHP}</Text>
+          )}
+        </View>
+      </View>
+
       <View style={styles.mapShadow}>
         <View style={styles.mapContainer}>
           <MapView
@@ -349,6 +355,20 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 10,
   },
+
+  infoBox: {
+    position: 'absolute',
+    alignItems: 'flex-end',
+    top: 5,
+    right: 0,
+    zIndex: 10,
+  },
+infoText: {
+  color: 'white',
+  fontSize: 12,
+  fontFamily: 'Aboreto',
+},
+
   zoomOutBox: {
     position: 'absolute',
     bottom: 5,
