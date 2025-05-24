@@ -14,7 +14,7 @@ interface RadarPlayer {
   userId: string;
   latitude: number;
   longitude: number;
-  type: string;
+  type: number;
 }
 
 export default function RadarScreen() {
@@ -22,6 +22,15 @@ export default function RadarScreen() {
   const currentUserId = useSelector((state: any) => state.auth.userId);
   const gameCode = useSelector((state: any) => state.game.gameCode);
   const gameOwner = useSelector((state: any) => state.game.owner);
+
+  const playersList = useSelector((state: any) => state.game.players);
+  const currentPlayer = playersList.find(
+    (player: any) => player._id === currentUserId
+  );
+  const [playerRole, setPlayerRole] = useState<number | null>(currentPlayer ? currentPlayer.role : null);
+  const changeRole = (newRole: number) => {
+    setPlayerRole(newRole);
+  };
 
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
   const [intervalMs, setIntervalMs] = useState(1000);
@@ -38,7 +47,7 @@ export default function RadarScreen() {
       socket.emit('pos_update', {
         gameCode,
         userId: currentUserId,
-        pos: { lat, lon },
+        pos: { lat, lon, playerRole },
       });
     }
   };
@@ -54,7 +63,7 @@ export default function RadarScreen() {
     <View className="flex-1 bg-bgc">
       <Background />
       <RadarMap
-        playerType="hider"
+        playerType={playerRole}
         maxZoomRadius={2500}
         players={players}
         border={{

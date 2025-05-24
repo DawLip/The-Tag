@@ -4,7 +4,7 @@ interface RadarPlayer {
   userId: string;
   latitude: number;
   longitude: number;
-  type: string;
+  type: number;
 }
 
 export function getGameCenter(

@@ -30,7 +30,7 @@ const Invisible = 'rgba(0, 0, 0, 0)';
 interface Player {
   latitude: number;
   longitude: number;
-  type: string;
+  type: number;
 }
 
 interface Border {
@@ -50,7 +50,7 @@ interface Effector {
 }
 
 interface RadarMapProps {
-  playerType: string;
+  playerType: number;
   maxZoomRadius: number;
   players: Player[];
   border?: Border;
@@ -118,14 +118,21 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
     }
   }, [smoothHeading, userLocation, zoomOut]);
   
-  const isPlayerVisible = (player: Player, currentPlayerType: string): boolean => {
-    if (currentPlayerType === 'seeker') {
-      return true; // seeker widzi wszystkich
-    } else {
-      return player.type !== 'seeker'; // inni nie widzą seekerów
+  const isPlayerVisible = (player: Player, currentPlayerType: number): boolean => {
+    if(currentPlayerType == 0) //spectator (0), widzi wszystkich
+    {
+      return true;
+    }
+    else if (currentPlayerType == 1) 
+    {
+      return player.type != 0; // seeker (1) widzi wszystkich, poza spectator (0)
+    }
+    else
+    {
+      return player.type != 1; // runners (2) nie widzą seekerów
     }
   };
-  const getPlayerColor = (player: Player, currentPlayerType: string): string => {
+  const getPlayerColor = (player: Player, currentPlayerType: number): string => {
     const HiderColor = 'rgb(252, 172, 0)';
     const SeekerColor = 'rgb(252, 80, 0)';
     const Invisible = 'rgba(0, 0, 0, 0)';
@@ -133,12 +140,8 @@ export const RadarMap: React.FC<RadarMapProps> = ({ maxZoomRadius, players, bord
     if (!isPlayerVisible(player, currentPlayerType)) {
       return Invisible;
     }
-  
-    if (currentPlayerType === 'seeker') {
-      return player.type === 'seeker' ? SeekerColor : HiderColor;
-    } else {
-      return HiderColor;
-    }
+    return player.type == 1 ? SeekerColor : HiderColor;
+
   };
   useEffect(() => {
     if (userLocation && players.length > 0) {
