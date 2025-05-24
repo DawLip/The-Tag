@@ -3,7 +3,7 @@ import { User } from '../models/user.model';
 
 @InputType()
 export class GetUserInput {
-  @Field(type => ID, { nullable: true })
+  @Field(type => ID, { nullable: false })
   _id?: string;
 
   @Field(type=> String, { nullable: true })

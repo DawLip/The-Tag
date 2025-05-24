@@ -38,6 +38,7 @@ export default function PlayersScreen() {
 const PlayersListByRole = ({ role, i }: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const socket = useSocket();
+  const router = useRouter();
 
   const userId = useSelector((state: any) => state.auth.userId);
   const owner = useSelector((state: any) => state.game.owner);
@@ -65,8 +66,10 @@ const PlayersListByRole = ({ role, i }: any) => {
       </TouchableOpacity>
       {players.filter((player: any) => player.role == i).map((player: any) => (
         <View className='flex-row items-center gap-16'>
-          <Text className='text-on_bgc'>name: {player.username} </Text>
-          <Text className='text-on_bgc'>role: {player.role}</Text>
+          <TouchableOpacity onPress={()=>{router.push(`/(other)/Profile/${player._id}`)}}>
+            <Text className='text-on_bgc'>name: {player.username} </Text>
+          </TouchableOpacity>
+          
           {owner == userId &&
             <TouchableOpacity onPress={() => handleLeaveLobby(player._id)}>
               <Text className='text-on_bgc'>X</Text>
