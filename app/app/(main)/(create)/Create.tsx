@@ -1,16 +1,16 @@
-import { Image, StyleSheet, Platform, View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useSocket } from '@/socket/socket';
 
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { joinLobby } from '@/store/slices/gameSlice';
 import type { AppDispatch } from '@store/index';
 
 import Button from '@c/Button';
+import Background from '@c/Background';
 import TextInput from '@c/inputs/TextInput';
 
-import Logo from '@img/Logo.svg';
 import { useState } from 'react';
 
 export default function CreateScreen() {
@@ -29,22 +29,51 @@ export default function CreateScreen() {
       router.push('/(lobby)/(players)/Players');
     });
   }
-
   return (
-    <View className='flex-1 bg-bgc'>
-      <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>New Lobby</Text>
-      <View>
-        <TextInput
-          label='Lobby name'
-          placeholder='Enter lobby name'
-          value={name}
-          setValue={setName}
-        />
+    <View style={styles.container}>
+      <Background />
+      <View style={styles.headerWrapper}>
+        <Text style={styles.title}>NEW LOBBY</Text>
       </View>
-      <View>
-        <Button label='Create Game' onPress={createGame}/>
+
+      <View style={styles.form}>
+          <Text style={styles.label}>Name</Text>
+          <TextInput
+            placeholder="Enter lobby name"
+            value={name}
+            setValue={setName}
+          />
       </View>
+
+        <Button label="Create lobby" onPress={createGame} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#262626',
+    padding: 48,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerWrapper: {
+    alignItems: 'center',
+    marginBottom: -124,
+  },
+  title: {
+    color: 'white',
+    fontSize: 32,
+    fontFamily: 'Aboreto',
+    lineHeight: 32,
+  },
+
+  label: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'Inter',
+    lineHeight: 22.4,
+  },
+});
 
