@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
-import { Feather, AntDesign } from '@expo/vector-icons';
+
+import VectorCreate from '@img/Vector-2.svg';
+import VectorHome from '@img/Vector.svg';
+import VectorSettings from '@img/Vector-3.svg';
 
 export default function TabLayout() {
   useAuth();
@@ -28,7 +31,7 @@ export default function TabLayout() {
           tabBarActiveTintColor: '#FFFFFF',
           tabBarInactiveTintColor: '#636363',
           tabBarItemStyle: {
-            width: 131, 
+            width: 131,
             height: 64,
             justifyContent: 'center',
             alignItems: 'center',
@@ -43,7 +46,7 @@ export default function TabLayout() {
           options={{
             tabBarLabel: 'CREATE',
             tabBarIcon: ({ color }) => (
-              <Feather name="crosshair" size={24} color={color} />
+              <VectorCreate fill={color} width={24} height={24} />
             ),
           }}
         />
@@ -52,7 +55,7 @@ export default function TabLayout() {
           options={{
             tabBarLabel: 'HOME',
             tabBarIcon: ({ color }) => (
-              <AntDesign name="home" size={24} color={color} />
+              <VectorHome fill={color} width={24} height={24} />
             ),
           }}
         />
@@ -61,7 +64,7 @@ export default function TabLayout() {
           options={{
             tabBarLabel: 'SETTINGS',
             tabBarIcon: ({ color }) => (
-              <Feather name="settings" size={24} color={color} />
+              <VectorSettings fill={color} width={24} height={24} />
             ),
           }}
         />

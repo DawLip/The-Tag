@@ -10,6 +10,10 @@ import { AppDispatch } from '@/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { gameStarted, lobbyUpdate, userJoined } from '@/store/slices/gameSlice';
 
+import VectorLog from '@img/LogsIcon.svg';
+import VectorUser from '@img/UsersIcon.svg';
+import VectorSettings from '@img/Vector-3.svg';
+
 export default function TabLayout() {
   const router = useRouter();
   const socket = useSocket();
@@ -54,11 +58,64 @@ export default function TabLayout() {
   }, [socket]);
 
   return (
-    <SafeAreaView style={{flex: 1}} className='bg-bgc'>
-      <Tabs>
-        <Tabs.Screen name="(events)" options={{ headerShown: false }} />
-        <Tabs.Screen name="(players)" options={{ headerShown: false }} />
-        <Tabs.Screen name="(settings)" options={{ headerShown: false }} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#262626' }}>
+      <Tabs
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: '#262626',
+            height: 64,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation: 4,
+            borderTopWidth: 0,
+          },
+          tabBarLabelStyle: {
+            fontFamily: 'Aboreto',
+            fontSize: 12,
+          },
+          tabBarActiveTintColor: '#FFFFFF',
+          tabBarInactiveTintColor: '#636363',
+          tabBarItemStyle: {
+            width: 131,
+            height: 64,
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            borderLeftWidth: route.name !== '(events)' ? 1 : 0,
+            borderLeftColor: '#343437',
+          },
+        })}
+      >
+        <Tabs.Screen
+          name="(events)"
+          options={{
+            tabBarLabel: 'EVENTS',
+            tabBarIcon: ({ color }) => (
+              <VectorLog fill={color} width={24} height={24} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="(players)"
+          options={{
+            tabBarLabel: 'PLAYERS',
+            tabBarIcon: ({ color }) => (
+              <VectorUser fill={color} width={24} height={24} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="(settings)"
+          options={{
+            tabBarLabel: 'SETTINGS',
+            tabBarIcon: ({ color }) => (
+              <VectorSettings fill={color} width={24} height={24} />
+            ),
+          }}
+        />
       </Tabs>
     </SafeAreaView>
   );
