@@ -5,13 +5,14 @@ interface RawPlayer {
   userId: string;
   lat: number;
   lon: number;
+  type:number;
 }
 
 interface RadarPlayer {
   userId: string;
   latitude: number;
   longitude: number;
-  type: string;
+  type: number;
 }
 
 export function usePlayersUpdater(
@@ -26,7 +27,7 @@ export function usePlayersUpdater(
   useEffect(() => {
     if (!socket) return;
 
-    const onPlayersUpdate = (data: { userId: string; pos: { lat: number; lon: number } }) => {
+    const onPlayersUpdate = (data: { userId: string; pos: { lat: number; lon: number, type:number } }) => {
       if (!data?.userId || !data?.pos) return;
 
       const { userId, pos } = data;
@@ -36,6 +37,7 @@ export function usePlayersUpdater(
           userId,
           lat: pos.lat,
           lon: pos.lon,
+          type: pos.type,
         };
       }
     };
@@ -47,7 +49,7 @@ export function usePlayersUpdater(
         userId: p.userId,
         latitude: p.lat,
         longitude: p.lon,
-        type: 'hider',
+        type: p.type,
       }));
       updateMapRadar(formatted);
     }, intervalMs);
