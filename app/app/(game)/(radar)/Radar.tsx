@@ -12,6 +12,7 @@ import { useCheckOutOfBounds } from '@/hooks/Radar/useCheckOutOfBounds';
 import { useEffectorsUpdater, RadarEffector } from '@/hooks/Radar/useEffectorsUpdater';
 
 import PerkButton from '@c/Radar/PerkButton';
+import Button from '@/components/Button';
 
 interface RadarPlayer {
   userId: string;
@@ -48,6 +49,11 @@ export default function RadarScreen() {
   const [zapUses, setZapUses] = useState(5);
   const [trackerUses, setTrackerUses] = useState(2);
   const [invizUses, setInvizUses] = useState(1);
+
+  const game_update = () => {
+    socket?.emit('game_update', {toChange:{msg:"hello"}, gameCode});
+    console.log('game_update event sended');
+  }
 
   // Dodajemy efektor lokalnie i emitujemy do serwera
   const addEffector = (newEffector: RadarEffector) => {
@@ -148,6 +154,7 @@ export default function RadarScreen() {
   return (
     <View style={styles.container}>
       <Background />
+      <Button label={'BUTTON - GAME_UPDATE'} onPress={game_update}/>
 
       <RadarMap
         playerHP={hp}

@@ -139,9 +139,9 @@ export class GameService {
     if (!lobby) {console.error("Error: game not found"); return { status: "ERROR", msg:"game not found" };}
     // client.join(gameCode);
     
-    console.log(`${Date.now()} [WS] Emitting 'lobby_update' to ${gameCode}:`, { toChange });
-    client.emit('lobby_update', { toChange, gameCode }); 
-    client.to(gameCode).emit('lobby_update', { toChange, gameCode });
+    console.log(`${Date.now()} [WS] Emitting 'game_update' to ${gameCode}:`, { toChange });
+    client.emit('game_update', { toChange, gameCode }); 
+    client.to(gameCode).emit('game_update', { toChange, gameCode });
     for (const key in toChange) {
       if (key !== '_id') {
         lobby[key] = toChange[key];
