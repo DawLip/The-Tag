@@ -108,3 +108,19 @@ export const calculateTransparency = (index : number, total : number) => {
     return coords;
   }
   
+ export function calculateOffsetPosition(origin: [number, number], distanceMeters: number, bearingDegrees: number): [number, number] {
+  const R = 6378137;
+  const d = distanceMeters;
+
+  const lat = origin[0] * Math.PI / 180;
+  const lon = origin[1] * Math.PI / 180;
+  const bearing = bearingDegrees * Math.PI / 180;
+
+  const newLat = Math.asin(Math.sin(lat) * Math.cos(d / R) + Math.cos(lat) * Math.sin(d / R) * Math.cos(bearing));
+  const newLon = lon + Math.atan2(
+    Math.sin(bearing) * Math.sin(d / R) * Math.cos(lat),
+    Math.cos(d / R) - Math.sin(lat) * Math.sin(newLat)
+  );
+
+  return [newLat * 180 / Math.PI, newLon * 180 / Math.PI];
+}

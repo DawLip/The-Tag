@@ -10,9 +10,8 @@ import { usePlayersUpdater } from '@/hooks/Radar/PlayersUpdat';
 import { getGameCenter } from '@/hooks/Radar/getGameCenter';
 import { useCheckOutOfBounds } from '@/hooks/Radar/useCheckOutOfBounds';
 import { useEffectorsUpdater, RadarEffector } from '@/hooks/Radar/useEffectorsUpdater';
-
+import {calculateOffsetPosition, calculateDistance } from '@c/Radar/RadarUtils'
 import PerkButton from '@c/Radar/PerkButton';
-import Button from '@/components/Button';
 
 interface RadarPlayer {
   userId: string;
@@ -41,76 +40,228 @@ export default function RadarScreen() {
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
   const [intervalMs, setIntervalMs] = useState(30000);
   const [myPosition, setMyPosition] = useState<[number, number] | null>(null);
+const [myHeading, setMyHeading] = useState<number | undefined>();
 
-  // Używamy hooka efektorów, który sam zarządza stanem efektorów i synchronizacją
-  const effectors = useEffectorsUpdater();
+
+  const effectors = useEffectorsUpdater(gameCode);
 
   const [orbitalUses, setOrbitalUses] = useState(3);
   const [zapUses, setZapUses] = useState(5);
   const [trackerUses, setTrackerUses] = useState(2);
   const [invizUses, setInvizUses] = useState(1);
 
-  const game_update = () => {
-    socket?.emit('game_update', {toChange:{msg:"hello"}, gameCode});
-    console.log('game_update event sended');
+  const EFFECTOR_DURATIONS = {
+  zap: 5000,
+  inviz: 90000,
+  tracker: 60000,
+  orbitalCountdown: 8000,
+  orbitalDeadZone: 30000,
+};
+
+
+function addEffector(
+  newEffector: RadarEffector
+) {
+  if (socket && socket.connected && gameCode) {
+    socket.emit('game_update', {
+        gameCode,
+        toChange: {
+          type: 'effectors',
+          effectors: [newEffector],
+        },
+    });
+    console.log('Wysłano nowy efektor:', newEffector);
+  } else {
+    console.warn('Nie udało się wysłać efektorów w game_update - brak połączenia lub gameCode');
+  }
+}
+
+function addDynamicEffector(baseEffector: RadarEffector, getPosition: () => [number, number] | null) {
+  if (!socket || !socket.connected || !gameCode) {
+    console.warn('Nie udało się wysłać efektora (dynamicznego) - brak połączenia lub gameCode');
+    return;
   }
 
-  // Dodajemy efektor lokalnie i emitujemy do serwera
-  const addEffector = (newEffector: RadarEffector) => {
-    if (socket && socket.connected && gameCode) {
-      socket.emit('game_update', {
-        type: 'effectors',
-        payload: [newEffector],
-      });
-    }
-    else{
-      console.warn("nie udało się wysłać efektorów w game update")
-    }
-  };
+  const duration = baseEffector.time;
+  const startTime = baseEffector.StartTime;
+  let elapsed = 0;
 
-  function useZap() {
-    if (zapUses <= 0 || !socket || !socket.connected || !myPosition || !currentUserId) return;
+  // Wysyła efektor z aktualną pozycją co 500ms
+  const interval = setInterval(() => {
+    const pos = getPosition();
+    if (!pos) return;
 
-    setZapUses(prev => Math.max(prev - 1, 0));
-
-    const duration = 5000; // ms
-    const now = Date.now();
-
-    const zapEffector: RadarEffector = {
-      latitude: myPosition[0],
-      longitude: myPosition[1],
-      radius: 45,
-      StartTime: now,
-      time: duration,
-      startColor: '#0044FF',
-      endColor: '#0000FF',
-      type: 'zap',
+    const dynamicEffector: RadarEffector = {
+      ...baseEffector,
+      latitude: pos[0],
+      longitude: pos[1],
+      StartTime: startTime,
     };
 
-    addEffector(zapEffector);
-    console.log(effectors)
-  }
+    socket.emit('game_update', {
+      gameCode,
+      toChange: {
+        type: 'effectors',
+        effectors: [dynamicEffector],
+      },
+    });
 
+    elapsed += 500;
+    if (elapsed >= duration) {
+      clearInterval(interval);
+    }
+  }, 500);
+}
+
+function useOrbitalStrike(heading: number = 0) {
+  if (orbitalUses <= 0 || !socket || !socket.connected || !myPosition || !currentUserId) return;
+
+  setOrbitalUses(prev => Math.max(prev - 1, 0));
+  const now = Date.now();
+
+  const targetPosition = calculateOffsetPosition(myPosition, 500, heading);
+
+  // Countdown effector
+  const countdownEffector: RadarEffector = {
+    latitude: targetPosition[0],
+    longitude: targetPosition[1],
+    radius: 320,
+    StartTime: now,
+    time: EFFECTOR_DURATIONS.orbitalCountdown,
+    startColor: '#FFFF00', 
+    endColor: '#FF8800',   
+    type: 'countdown',
+  };
+
+  addEffector(countdownEffector);
+
+  // DeadZone po countdownie
+  setTimeout(() => {
+    const deadZoneEffector: RadarEffector = {
+      latitude: targetPosition[0],
+      longitude: targetPosition[1],
+      radius: 310,
+      StartTime: Date.now(),
+      time: EFFECTOR_DURATIONS.orbitalDeadZone,
+      startColor: '#440000', // ciemnoczerwony
+      endColor: '#000000',   // czarny
+      type: 'deadZone',
+    };
+    addEffector(deadZoneEffector);
+  }, EFFECTOR_DURATIONS.orbitalCountdown);
+}
+
+function useZap() {
+  if (zapUses <= 0 || !socket || !socket.connected || !myPosition || !currentUserId) return;
+
+  setZapUses(prev => Math.max(prev - 1, 0));
+
+  const now = Date.now();
+
+  const zapEffector: RadarEffector = {
+    latitude: myPosition[0],
+    longitude: myPosition[1],
+    radius: 45,
+    StartTime: now,
+    time: EFFECTOR_DURATIONS.zap,
+    startColor: '#00BBFF',
+    endColor: '#0000FF',
+    type: 'zap',
+  };
+  addDynamicEffector(zapEffector, () => myPosition);
+}
+
+function useInviz() {
+  if (invizUses <= 0 || !socket || !socket.connected || !myPosition || !currentUserId) return;
+
+  setInvizUses(prev => Math.max(prev - 1, 0));
+
+  const now = Date.now();
+
+  const invizEffector: RadarEffector = {
+    latitude: myPosition[0],
+    longitude: myPosition[1],
+    radius: 100,
+    StartTime: now,
+    time: EFFECTOR_DURATIONS.inviz,
+    startColor: '#AAEEFF',
+    endColor: '#FFFFFF',
+    type: 'zap',
+  };
+  addDynamicEffector(invizEffector, () => myPosition);
+}
   const intervalMsRef = useRef(intervalMs);
 
   useEffect(() => {
     intervalMsRef.current = intervalMs;
   }, [intervalMs]);
 
-  function useTracker() {
-    if (trackerUses <= 0) return;
+function useTracker() {
+  if (trackerUses <= 0) return;
 
-    setTrackerUses(prev => Math.max(prev - 1, 0));
-    const previousInterval = intervalMsRef.current;
+  setTrackerUses(prev => Math.max(prev - 1, 0));
+  const previousInterval = intervalMsRef.current;
+  setIntervalMs(1000);
 
-    setIntervalMs(1000);
+  setTimeout(() => {
+    setIntervalMs(previousInterval);
+  }, EFFECTOR_DURATIONS.tracker);
+}
 
-    setTimeout(() => {
-      setIntervalMs(previousInterval);
-    }, 60000);
-  }
+useEffect(() => {
+  if (!myPosition || !playerRole || hp <= 0) return;
 
-  usePlayersUpdater(currentUserId, setPlayers, intervalMs);
+  // 1. Runner blisko Seekera (<20m)
+  const runnerNearSeekerInterval = setInterval(() => {
+    if (playerRole === 2) {
+      const isNearSeeker = players.some(p =>
+        p.type === 1 &&
+        calculateDistance(myPosition[0], myPosition[1], p.latitude, p.longitude) < 20
+      );
+      if (isNearSeeker) decreaseHp(5);
+    }
+  }, 1000);
+
+  // 2. Runner w efekcie zap
+  const runnerInZapInterval = setInterval(() => {
+    const now = Date.now();
+    if (playerRole === 2 && effectors) {
+      console.log("jest effector")
+      const inZap = effectors.some(e =>
+        e.type === 'zap' &&
+        now - e.StartTime < e.time &&
+        calculateDistance(myPosition[0], myPosition[1], e.latitude, e.longitude) < e.radius
+      );
+      if (inZap){
+          decreaseHp(5);
+          console.log('Auć')
+      } 
+    }
+  }, 1000);
+
+  // 3. Każdy w deadZone
+  const inDeadZoneInterval = setInterval(() => {
+    const now = Date.now();
+    if (effectors) {
+      const inDeadZone = effectors.some(e =>
+        e.type === 'deadZone' &&
+        now - e.StartTime < e.time &&
+        calculateDistance(myPosition[0], myPosition[1], e.latitude, e.longitude) < e.radius
+      );
+      if (inDeadZone) decreaseHp(40);
+    }
+  }, 1000);
+
+  return () => {
+    clearInterval(runnerNearSeekerInterval);
+    clearInterval(runnerInZapInterval);
+    clearInterval(inDeadZoneInterval);
+  };
+}, [myPosition, playerRole, players, effectors, hp]);
+
+
+usePlayersUpdater(currentUserId, setPlayers, intervalMs, effectors);
+
 
   const center = getGameCenter(players, gameOwner, currentUserId, myPosition);
   const fallbackCenter: [number, number] = [50.22774943220666, 18.90917709012359];
@@ -154,7 +305,6 @@ export default function RadarScreen() {
   return (
     <View style={styles.container}>
       <Background />
-      <Button label={'BUTTON - GAME_UPDATE'} onPress={game_update}/>
 
       <RadarMap
         playerHP={hp}
@@ -168,6 +318,7 @@ export default function RadarScreen() {
         }}
         effectors={effectors}
         onPositionUpdate={(lat: any, lon: any) => sendMyPosition(lat, lon)}
+        onHeadingUpdate={(heading:any) => setMyHeading(heading)}
       />
 
       <View style={styles.timeContainer}>
@@ -184,8 +335,8 @@ export default function RadarScreen() {
             icon={<Image source={require('@/assets/images/orbital_strike.png')} style={styles.icon} />}
             usesLeft={orbitalUses}
             activeDuration={3000}
-            cooldownDuration={orbitalUses > 0 ? 20000 : 0}
-            onUse={() => console.log('Orbital used')}
+            cooldownDuration={0}
+            onUse={() => useOrbitalStrike(myHeading)}
           />
         </View>
 
@@ -197,7 +348,6 @@ export default function RadarScreen() {
             cooldownDuration={zapUses > 0 ? 15000 : 0}
             onUse={() => {
               useZap();
-              console.log('Zap used');
             }}
           />
         </View>
@@ -210,7 +360,6 @@ export default function RadarScreen() {
             cooldownDuration={trackerUses > 0 ? 360000 : 0}
             onUse={() => {
               useTracker();
-              console.log('Tracker used');
             }}
           />
         </View>
@@ -221,7 +370,7 @@ export default function RadarScreen() {
             usesLeft={invizUses}
             activeDuration={90000}
             cooldownDuration={invizUses > 0 ? 520000 : 0}
-            onUse={() => console.log('Invisibility used')}
+            onUse={() => useInviz()}
           />
         </View>
       </View>

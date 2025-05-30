@@ -25,6 +25,7 @@ interface Player {
   latitude: number;
   longitude: number;
   type: number;
+  invisible?:boolean;
 }
 
 interface Border {
@@ -52,9 +53,10 @@ interface RadarMapProps {
   border?: Border;
   effectors?: Effector[];
   onPositionUpdate?: (lat: number, lon: number) => void;
+  onHeadingUpdate?: (heading: number) => void;
 }
 
-export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, players, border, effectors, playerType, onPositionUpdate }) => {
+export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, players, border, effectors, playerType, onPositionUpdate,onHeadingUpdate }) => {
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [smoothHeading, setSmoothHeading] = useState(0);
   const [nearestDistance, setNearestDistance] = useState<number | null>(null);
@@ -87,6 +89,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
           const coords = location.coords;
           setUserLocation(coords);
           onPositionUpdate?.(coords.latitude, coords.longitude);
+          
         }
       );
 
@@ -97,6 +100,8 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
           const delta = ((newHeading - lastHeading.current + 540) % 360) - 180;
           lastHeading.current = (lastHeading.current + alpha * delta + 360) % 360;
           setSmoothHeading(lastHeading.current);
+          onHeadingUpdate?.(lastHeading.current);
+
         }
       });
     })();
@@ -114,6 +119,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
   }, [smoothHeading, userLocation, zoomOut]);
 
   const isPlayerVisible = (player: Player, currentPlayerType: number): boolean => {
+    if (player.invisible) return false;
     if (currentPlayerType === 0) return true;
     if (currentPlayerType === 1) return player.type !== 0;
     return player.type !== 1;
@@ -184,28 +190,34 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
     );
   };
 
-  const renderEffectors = () => {
-    if (!effectors) return null;
+const renderEffectors = () => {
+  if (!effectors) return null;
 
-    return effectors
-      .filter(eff => timeNow - eff.StartTime < eff.time)
-      .map((eff, index) => {
-        const elapsed = timeNow - eff.StartTime;
-        const t = elapsed / eff.time;
+  //wyłączenie obszarów inviz dla szukających
+  return effectors
+    .filter(eff => {
+      const isVisibleByTime = timeNow - eff.StartTime < eff.time;
+      const isVisibleToPlayer = !(playerType === 1 && eff.type === 'Inviz');
+      return isVisibleByTime && isVisibleToPlayer;
+    })
+    .map((eff, index) => {
+      const elapsed = timeNow - eff.StartTime;
+      const t = elapsed / eff.time;
 
-        const animatedColor = interpolateColor(eff.startColor, eff.endColor, t);
+      const animatedColor = interpolateColor(eff.startColor, eff.endColor, t);
 
-        return (
-          <MapCircle
-            key={`effector-${index}`}
-            center={{ latitude: eff.latitude, longitude: eff.longitude }}
-            radius={eff.radius}
-            strokeColor={animatedColor}
-            fillColor={animatedColor}
-          />
-        );
-      });
-  };
+      return (
+        <MapCircle
+          key={`effector-${index}`}
+          center={{ latitude: eff.latitude, longitude: eff.longitude }}
+          radius={eff.radius}
+          strokeColor={animatedColor}
+          fillColor={animatedColor}
+        />
+      );
+    });
+};
+
 
   const renderRadarOverlay = () => {
     return (
