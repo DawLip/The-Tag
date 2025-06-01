@@ -5,13 +5,14 @@ import { client } from '@/appollo-client';
 
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { queryGraphQL } from '@/utils/mutateGraphQL';
+import { mutateGraphQL, queryGraphQL } from '@/utils/mutateGraphQL';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { userId } = useLocalSearchParams();
   console.log(userId)
   let token = useSelector((state:any) => state.auth.token)
+  const thisUserId = useSelector((state:any) => state.auth.userId)
 
   const [userData, setUserData] = useState<any>({});
 
@@ -48,13 +49,23 @@ export default function ProfileScreen() {
 
     const fetchFriends = async () => {
       const data = await queryGraphQL(FRIENDS, { _id: userId }, token)
-      console.log(data)
+      console.log(data.user)
+      setUserData(data.user);
     };
 
     fetchFriends();
   }, [client]);
 
-
+  const addFriend = async () => {
+    const ADD_FRIENDS = gql`
+      mutation inviteFriend($userId: ID!, $friendId: ID!) {
+        inviteFriend(input: { userId: $userId, friendId: $friendId }) {
+          status
+    }}`;
+    
+    const data = await mutateGraphQL(ADD_FRIENDS, { userId: thisUserId, friendId: userId })
+    console.log(data.user)
+  }
 
 
   return (
@@ -66,7 +77,7 @@ export default function ProfileScreen() {
         <View>
           <View>{accountHeaderStats.map(stat => <AccountHeaderStats key={`AccountHeaderStats-${stat.label}`} label={stat.label} value={stat.value} />)}</View>
           <View>
-            <TouchableOpacity><Text>ADD FRIEND</Text></TouchableOpacity>
+            <TouchableOpacity onPress={addFriend}><Text>ADD FRIEND</Text></TouchableOpacity>
           </View>
         </View>
       </View>
@@ -76,7 +87,7 @@ export default function ProfileScreen() {
       <View>
         <View><Text>Friends</Text></View>
         <View>
-          {userData?.friends?.map((friend:any)=><View></View>)}
+          {userData?.friends?.map((friend:any)=><View>{friend.username}</View>)}
         </View>
       </View>
     </View>

@@ -76,6 +76,7 @@ export class UsersService {
     return await this.userModel.find({_id:{"$in": user.friends}}).exec();
   }
   async addFriend({userId, friendId}:ModifyFriendListInput): Promise<U | undefined> {
+    console.log("=== addFriend ===");
     const res = await this.userModel.updateOne({_id:userId}, {
       $push: { friends: friendId }
     }).exec();

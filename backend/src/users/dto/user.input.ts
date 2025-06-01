@@ -69,9 +69,9 @@ export class ChangeEmailInput {
 
 @InputType()
 export class ModifyFriendListInput {
-  @Field(type=> Int)
-  userId: number;
+  @Field(type => ID, { nullable: true })
+  userId: string;
 
-  @Field(type=> Int)
-  friendId: number;
+  @Field(type => ID, { nullable: false })
+  friendId: string;
 }
