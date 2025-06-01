@@ -26,6 +26,53 @@ export class GameService {
   async findGameLog(_id: Types.ObjectId): Promise<any> { 
     return await this.gameLogModel.findOne({ _id }).exec();
   }
+  async findGames(userId: Types.ObjectId): Promise<any> { 
+  console.log(`Find games for userId ${userId}`);
+  const games = await this.gameModel.find({ 'players.playerId': userId }).exec();
+  console.log('Found games:', games.length);
+
+  const res:any = await Promise.all(
+    games.map(async (game) => {
+      const populatedPlayers = await Promise.all(
+        game.players.map(async (player) => {
+          try {
+            console.log('Looking up userId:', String(player.playerId));
+            const user = await this.usersService.findOneById(String(player.playerId));
+            if (!user) {
+              console.warn(`User not found for playerId ${player.playerId}`);
+              return null;
+            }
+
+            // Sprawdź czy user.toObject istnieje
+            let userObj = typeof user.toObject === 'function' ? user.toObject() : user;
+            
+            return {
+              ...userObj,
+              role: player.role,
+              userId: player.playerId,
+            };
+          } catch (err) {
+            console.error('Error populating player:', err);
+            return null;
+          }
+        })
+      );
+
+      // Filtrujemy null z populatedPlayers (np. gdy użytkownik nie istnieje)
+      const filteredPlayers = populatedPlayers.filter(p => p !== null);
+
+      return {
+        ...(typeof game.toObject === 'function' ? game.toObject() : game),
+        players: filteredPlayers,
+      };
+    })
+  );
+
+  console.log('Games with populated players:', res);
+  return res;
+}
+
+
   generateGameCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let gameCode = '';
@@ -166,11 +213,16 @@ export class GameService {
   // === Populate ===
   async populatePlayers(game): Promise<any> {
     const populatedPlayers = await Promise.all(
-      game.players.map(async (player) => ({
-        ...(await this.usersService.findOneById(player.playerId)).toObject(),
+      game.players.map(async (player) => {
+        console.log("test")
+        console.log("player "+player)
+        return ({
+        ...(await this.usersService.findOneById(player.playerId || player._id || player.userId)).toObject(),
         role: player.role,
-      })
+        userId: player._id
+      })}
     ));
+    console.log(populatedPlayers)
   
     return {...game, players: populatedPlayers};
   }

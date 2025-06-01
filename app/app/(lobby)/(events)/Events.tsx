@@ -14,9 +14,6 @@ export default function EventsScreen() {
   const game = useSelector((state:any) => state.game)
   const userId = useSelector((state:any) => state.auth.userId)
 
-  // const [gameName, setGameName] = useState(game.name);
-  // const [gameDescription, setGameDescription] = useState(game.description);
-
   return (
     <View className='flex-1 bg-bgc'>
       <LabelInput label='Name' value={game.name} isInput={game.owner==userId} setting='name'/>

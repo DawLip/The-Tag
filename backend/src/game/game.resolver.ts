@@ -18,6 +18,10 @@ export class GameResolver {
   async game(@Args('_id', { type: () => ID }) _id: Types.ObjectId) {
     return this.gameService.findGame(_id); 
   }
+  @Query(() => [Game])
+  async games(@Args('userId', { type: () => ID }) userId: Types.ObjectId) {
+    return this.gameService.findGames(userId); 
+  }
 
   @ResolveField(() => User) 
   async owner(@Parent() game: Game) {
@@ -28,11 +32,6 @@ export class GameResolver {
   async gameMaster(@Parent() game: Game) {
     return await this.userService.findOneById(game.gameMaster.toString());
   }
-
-  // @ResolveField(() => [User]) 
-  // async spectators(@Parent() game: Game) {
-  //   return await this.userService.findById(game.spectators);
-  // }
 
   @ResolveField(() => [User]) 
   async players(@Parent() game: Game) {
