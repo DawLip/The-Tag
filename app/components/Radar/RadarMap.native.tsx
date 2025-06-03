@@ -197,7 +197,8 @@ const renderEffectors = () => {
   return effectors
     .filter(eff => {
       const isVisibleByTime = timeNow - eff.StartTime < eff.time;
-      const isVisibleToPlayer = !(playerType === 1 && eff.type === 'Inviz');
+      const isVisibleToPlayer = !(playerType === 1 && eff.type === 'inviz');
+      //console.log('Effector type:', eff.type);
       return isVisibleByTime && isVisibleToPlayer;
     })
     .map((eff, index) => {

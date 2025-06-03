@@ -31,9 +31,9 @@ const addEffectors = useCallback((newEffectors: RadarEffector[]) => {
     const existingKeys = new Set(prev.map(e => `${e.StartTime}_${e.type}`));
     const added = newEffectors.filter(ne => !existingKeys.has(`${ne.StartTime}_${ne.type}`));
 
-    if (added.length > 0) {
-      console.log('Dodaję nowe efektory:', added);
-    }
+    // if (added.length > 0) {
+    //   console.log('Dodaję nowe efektory:', added);
+    // }
 
     return [...updated, ...added];
   });
@@ -43,7 +43,7 @@ const addEffectors = useCallback((newEffectors: RadarEffector[]) => {
     if (!socket || !gameCode) return;
 
     const onGameUpdate = (data: any) => {
-      console.log('Odebrano event game_update:', data);
+      // console.log('Odebrano event game_update:', data);
 
       if (data.gameCode && data.gameCode !== gameCode) return;
 
@@ -67,9 +67,9 @@ const addEffectors = useCallback((newEffectors: RadarEffector[]) => {
       const now = Date.now();
       setEffectors(prev => {
         const filtered = prev.filter(eff => eff.StartTime + eff.time > now);
-        if (filtered.length !== prev.length) {
-          console.log('Usuwam wygasłe efektory');
-        }
+        // if (filtered.length !== prev.length) {
+        //   console.log('Usuwam wygasłe efektory');
+        // }
         return filtered;
       });
     }, 1500);
