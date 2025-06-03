@@ -169,7 +169,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
   const renderBoarders = () => {
     if (!border) return null;
 
-    const delta = border.radius / 36000 + 0.001;
+    const delta = border.radius / 36000 + 0.001 + 0.034;
 
     const worldBounds = [
       { latitude: border.points[0] + delta, longitude: border.points[1] - delta },

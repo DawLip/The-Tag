@@ -25,8 +25,43 @@ export default function RadarScreen() {
   const currentUserId = useSelector((state: any) => state.auth.userId);
   const gameCode = useSelector((state: any) => state.game.gameCode);
   const gameOwner = useSelector((state: any) => state.game.owner);
+  // const GameRadius = useSelector((state: any) => state.game.GameRadius);
   const GameRadius = 3000;
+  const SeekersConfainmentRadius = 70;
   const ZoomRadius = (GameRadius / 3) * 2 + 600;
+
+  const [saveTime, setSaveTime] = useState(20); // seconds
+  const [gameTime, setGameTime] = useState(1800); // seconds
+
+  // const [saveTime, setGameTime] = useState(useSelector((state: any) => state.game.saveTime) * 60); // seconds
+  // const [gameTime, setSaveTime] = useState(useSelector((state: any) => state.game.gameTime) * 60); // seconds
+  
+useEffect(() => {
+  const interval = setInterval(() => {
+    setSaveTime(prevSaveTime => {
+      if(prevSaveTime > 0)
+        return prevSaveTime - 1;
+      return 0;
+
+    });
+
+    setGameTime(prevGameTime => {
+      if (saveTime === 0 && prevGameTime > 0) {
+        return prevGameTime - 1;
+      }
+      return prevGameTime;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+  }, [saveTime]);
+  
+  const formatTime = (seconds: number) => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+  };
+
 
   const playersList = useSelector((state: any) => state.game.players);
   const currentPlayer = playersList.find((player: any) => player._id === currentUserId);
@@ -35,6 +70,8 @@ export default function RadarScreen() {
   const [hp, setHp] = useState(100);
   
   const decreaseHp = useCallback((amount: number) => {
+      if(playerRole === 2 && saveTime > 0) return;
+
     setHp(prev => {
       const newHp = Math.max(prev - amount, 0);
       // console.log(`Zmniejszam HP: ${prev} -> ${newHp}`);
@@ -48,7 +85,7 @@ export default function RadarScreen() {
 
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
   const [intervalMs, setIntervalMs] = useState(30000);
-  const [myPosition, setMyPosition] = useState<[number, number] | null>(null);
+  const [myPosition, setMyPosition] = useState<[number, number]>([50,50]);
   const [myHeading, setMyHeading] = useState<number | undefined>();
 
   const effectors = useEffectorsUpdater(gameCode);
@@ -223,7 +260,8 @@ export default function RadarScreen() {
   );
 
   const center = getGameCenter(players, gameOwner, currentUserId, myPosition);
-  const fallbackCenter: [number, number] = [50.22774943220666, 18.90917709012359];
+  //const fallbackCenter: [number, number] = [myPosition[0], myPosition[1]];
+  const fallbackCenter: [number, number] = [50,50];
 
   const sendMyPosition = (lat: number, lon: number) => {
     setMyPosition([lat, lon]);
@@ -248,19 +286,6 @@ export default function RadarScreen() {
 
   useCheckOutOfBounds(myPosition, center ?? fallbackCenter, GameRadius, handleOutOfBounds);
 
-  const [gameTime, setGameTime] = useState(1800); // seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGameTime(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-  
-  const formatTime = (seconds: number) => {
-    const min = Math.floor(seconds / 60);
-    const sec = seconds % 60;
-    return `${min}:${sec < 10 ? '0' : ''}${sec}`;
-  };
 
 return (
   <View style={styles.container}>
@@ -273,7 +298,7 @@ return (
       players={players}
       border={{
         points: center ?? fallbackCenter,
-        radius: GameRadius,
+        radius: (playerRole == 1 && saveTime > 0)? SeekersConfainmentRadius: GameRadius,
         color: '#CC4010',
       }}
       effectors={effectors}
@@ -282,7 +307,15 @@ return (
     />
 
     <View style={styles.timeContainer}>
-      <Text style={styles.timeText}>Time Left: {formatTime(gameTime)}</Text>
+        {saveTime > 0 ? (
+    <Text style={styles.timeText}>
+      Save Time: {formatTime(saveTime)}
+    </Text>
+  ) : (
+    <Text style={styles.timeText}>
+      Time Left: {formatTime(gameTime)}
+    </Text>
+  )}
     </View>
 
     <View style={styles.abilitiesHeader}>
@@ -296,7 +329,7 @@ return (
             <PerkButton
               icon={<Image source={require('@/assets/images/orbital_strike.png')} style={styles.icon} />}
               usesLeft={orbitalUses}
-              activeDuration={3000}
+              activeDuration={2500}
               cooldownDuration={0}
               onUse={() => useOrbitalStrike(myHeading)}
             />
