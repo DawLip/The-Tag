@@ -30,11 +30,13 @@ export default function RadarScreen() {
   const SeekersConfainmentRadius = 70;
   const ZoomRadius = (GameRadius / 3) * 2 + 600;
 
-  const [saveTime, setSaveTime] = useState(20); // seconds
-  const [gameTime, setGameTime] = useState(1800); // seconds
+  // const [saveTime, setSaveTime] = useState(200); // seconds
+  // const [gameTime, setGameTime] = useState(1800); // seconds
 
-  // const [saveTime, setGameTime] = useState(useSelector((state: any) => state.game.saveTime) * 60); // seconds
-  // const [gameTime, setSaveTime] = useState(useSelector((state: any) => state.game.gameTime) * 60); // seconds
+  const settingsSaveTime = useSelector((state: any) => state.game.settings.saveTime)
+  const settingsGameTime = useSelector((state: any) => state.game.settings.gameTime)
+  const [gameTime, setGameTime] = useState(settingsGameTime * 60); // seconds
+  const [saveTime, setSaveTime] = useState(settingsSaveTime * 60); // seconds
   
 useEffect(() => {
   const interval = setInterval(() => {
