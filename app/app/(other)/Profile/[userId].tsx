@@ -16,8 +16,8 @@ export default function ProfileScreen() {
 
   const [userData, setUserData] = useState<any>({});
 
-  if(token=="") token = localStorage.getItem('token');
-  else localStorage.setItem('token', token);
+  // if(token=="") token = localStorage.getItem('token');
+  // else localStorage.setItem('token', token);
   
   console.log(token)
 
