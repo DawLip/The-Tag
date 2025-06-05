@@ -13,6 +13,7 @@ interface GameState {
   spectators: any[];
   players: any[]; 
   gameLogs: any[];
+  roles:any[]
 }
 
 const initGameState: GameState = {
@@ -28,6 +29,7 @@ const initGameState: GameState = {
   spectators: [],
   players: [],
   gameLogs: [],
+  roles: []
 };
 
 const gameSlice = createSlice({
@@ -51,8 +53,16 @@ const gameSlice = createSlice({
         }
       }
     },
+    addLog: (state, action: PayloadAction<any>) => {
+      state.gameLogs = [...state.gameLogs, {
+        date: Date.now(),
+        yourRole:  state.roles[state.players.filter((p:any)=>p._id==action.payload.userId)[0]?.role].name,
+        playersRemaining:state.players.filter((p:any)=>p.role==2).length,
+        ...action.payload
+      }]
+    },
   },
 });
 
-export const { joinLobby, userJoined, gameStarted, lobbyUpdate } = gameSlice.actions;
+export const { joinLobby, userJoined, gameStarted, lobbyUpdate, addLog } = gameSlice.actions;
 export default gameSlice.reducer;

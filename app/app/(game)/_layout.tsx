@@ -5,22 +5,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/socket/socket';
-import { lobbyUpdate } from '@/store/slices/gameSlice';
-import { useDispatch } from 'react-redux';
+import { addLog, lobbyUpdate } from '@/store/slices/gameSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/store';
 
 
 export default function TabLayout() {
   const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: any) => state.auth.userId);
 
   useAuth();
 
   const socket = useSocket();
 
   useEffect(()=>{
+    dispatch(addLog({name:"Game started", userId}));
+
     const game_update = (data:any) => {
       console.log("=== GAME_UPDATE ===")
-      dispatch(lobbyUpdate(data))
+      if(data.logName) dispatch(addLog({name: data.logName, userId}));
+      dispatch(lobbyUpdate(data));
     }
 
     socket?.on("game_update", game_update);
