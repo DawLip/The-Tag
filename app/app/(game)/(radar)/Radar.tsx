@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext, useCallback } from 'react';
-import { Image, View, Text, StyleSheet } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import Background from '@c/Background';
 // @ts-ignore
@@ -12,6 +12,7 @@ import { useCheckOutOfBounds } from '@/hooks/Radar/useCheckOutOfBounds';
 import { useEffectorsUpdater, RadarEffector } from '@/hooks/Radar/useEffectorsUpdater';
 import { calculateOffsetPosition } from '@c/Radar/RadarUtils';
 import PerkButton from '@c/Radar/PerkButton';
+import { useRouter } from 'expo-router';
 
 interface RadarPlayer {
   userId: string;
@@ -22,6 +23,7 @@ interface RadarPlayer {
 
 export default function RadarScreen() {
   const socket = useContext(SocketContext);
+  const router = useRouter();
   const currentUserId = useSelector((state: any) => state.auth.userId);
   const gameCode = useSelector((state: any) => state.game.gameCode);
   const gameOwner = useSelector((state: any) => state.game.owner);
@@ -320,9 +322,10 @@ return (
   )}
     </View>
 
-    <View style={styles.abilitiesHeader}>
-      <Text style={styles.abilitiesText}>umiejętności</Text>
-    </View>
+    <TouchableOpacity onPress={()=>{router.push('/(game)/(radar)/Hint')}} style={styles.abilitiesHeader} className='flex-row gap-2'>
+      <Text style={styles.abilitiesText}>Umiejętności</Text>
+      <Image source={require('@/assets/images/infoIcon.png')} style={{width: 32, height:32}} />
+    </TouchableOpacity>
 
     {playerRole !== 0 && (
       <View style={styles.perksWrapper}>
