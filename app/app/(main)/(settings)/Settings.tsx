@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import Button from '@c/Button';
 import Background from '@c/Background';
 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/store/slices/authSlice';
 
 export default function SettingsScreen() {
@@ -12,26 +12,34 @@ export default function SettingsScreen() {
   const dispatch = useDispatch();
 
   const handleLogout = () => { dispatch(logout()); router.push('/(auth)/Login'); };
+  const userId = useSelector((state: any) => state.auth.userId);
 
   return (
     <View style={styles.container}>
       <Background />
 
       <View style={styles.menu}>
+        <Pressable onPress={() => router.push(`/(other)/Profile/${userId}`)}>
+          <Text style={styles.menuItem}>Profile</Text>
+        </Pressable>
         <Pressable onPress={() => router.push('/(main)/(settings)/GamesHistory')}>
           <Text style={styles.menuItem}>GAMES HISTORY</Text>
-        </Pressable>
-
-        <Pressable onPress={() => router.push('/(main)/(settings)/Statistics')}>
-          <Text style={styles.menuItem}>STATISTICS</Text>
         </Pressable>
 
         <Pressable onPress={() => router.push('/(main)/(settings)/Friends')}>
           <Text style={styles.menuItem}>FRIENDS</Text>
         </Pressable>
 
+        <Pressable onPress={() => router.push('/(main)/(settings)/Statistics')}>
+          <Text style={styles.menuItem}>STATISTICS</Text>
+        </Pressable>
+
         <Pressable onPress={() => router.push('/(main)/(settings)/Account')}>
           <Text style={styles.menuItem}>ACCOUNT</Text>
+        </Pressable>
+
+        <Pressable onPress={() => router.push('/(main)/(settings)/Add_friends')}>
+          <Text style={styles.menuItem}>ADD FRIENDS</Text>
         </Pressable>
       </View>
 
