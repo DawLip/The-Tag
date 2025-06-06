@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, View, Text, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, Platform, View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useEffect, useState } from 'react';
@@ -12,54 +12,47 @@ export default function FriendsScreen() {
   const token = useSelector((state:any) => state.auth.token)
   const userId = useSelector((state:any) => state.auth.userId)
 
-  const [userData, setUserData] = useState<any>({});
-
-
+  const [userData, setUserData] = useState<any>([]);
+  const [userDataToRender, setUserDataToRender] = useState<any>([]);
+  const [find, setFind] = useState<any>("");
 
   useEffect(() => {
     const FRIENDS = gql`
-      query user($_id: ID!) {
-        user(input: { _id: $_id }) {
+      query {
+        users {
           username
-          email
-          friends {
-            _id
-            username
-          }
+          _id
         }
       }
     `;
 
     const fetchFriends = async () => {
-      const data = await queryGraphQL(FRIENDS, { _id: userId }, token)
-      console.log(data.user)
-      setUserData(data.user);
+      const data = await queryGraphQL(FRIENDS, {}, token)
+      console.log(data.users)
+      setUserData(data.users);
+      setUserDataToRender(data.users);
     };
 
     fetchFriends();
   }, [client]);
-
-  const removeFriend = async (friendId:any)=>{
-    const ADD_FRIENDS = gql`
-      mutation removeFriend($userId: ID!, $friendId: ID!) {
-        removeFriend(input: { userId: $userId, friendId: $friendId }) {
-          status
-    }}`;
-    
-    const data = await mutateGraphQL(ADD_FRIENDS, { userId: userId, friendId: friendId })
-    console.log(data.user)
-    setUserData((prev:any)=>({...prev, friends:[...prev.friends.filter((f:any)=>f._id!==friendId)]}))
-  }
+console.log(userData)
 
   return (
     <View className='flex-1 bg-bgc'>
-      <Text className='text-on_bgc' style={{fontFamily: 'Aboreto'}}>Friends</Text>
+      <TextInput
+        value={find}
+        placeholder={"Find friends"}
+        placeholderTextColor="#A0A0A0"
+        onChangeText={(e:any)=>{
+          setFind(e);
+          setUserDataToRender(userData.filter((d:any)=>d.username.includes(e)));
+        }}
+      />
       <View>
-        {userData?.friends?.map((friend:any)=>(
-          <View className='flex-row gap-2'>
+        {userDataToRender?.map((friend:any)=>(
+          <TouchableOpacity onPress={()=>router.push(`/(other)/Profile/${userId}`)} className='flex-row gap-2'>
             <Text>{friend.username}</Text>
-            <TouchableOpacity onPress={()=>removeFriend(friend._id)}><Text>X</Text></TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
     </View>
