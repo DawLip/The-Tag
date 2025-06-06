@@ -21,6 +21,11 @@ export class UsersResolver {
     return this.usersService.findOne(input);
   }
 
+  @Query(() => [User])
+  async users() {
+    return this.usersService.findAll();
+  }
+
   @Public()
   @Mutation(() => UserWithToken)
   async login(@Args('input') input: LoginInput) {

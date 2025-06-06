@@ -65,6 +65,9 @@ export class UsersService {
     console.log(_id)
     return await this.userModel.findOne({_id: _id}).exec();
   }
+  async findAll(): Promise<U | undefined> {
+    return await this.userModel.find().exec();
+  }
   async findOneByEmail(email: string): Promise<U | undefined> {
     return await this.userModel.findOne({email: email}).exec();
   }
@@ -76,6 +79,7 @@ export class UsersService {
     return await this.userModel.find({_id:{"$in": user.friends}}).exec();
   }
   async addFriend({userId, friendId}:ModifyFriendListInput): Promise<U | undefined> {
+    console.log("=== addFriend ===");
     const res = await this.userModel.updateOne({_id:userId}, {
       $push: { friends: friendId }
     }).exec();

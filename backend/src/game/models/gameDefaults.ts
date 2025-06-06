@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 export function gameDefault(gameCode: string, name: string, creatorId: string) {
   return {
     name: name || 'New Game',
@@ -77,10 +79,10 @@ export function gameDefault(gameCode: string, name: string, creatorId: string) {
     ],
     effectors: [],
     owner: creatorId,
-    gameMaster: null,
+    gameMaster: creatorId,
     players: [
       {
-        playerId: creatorId,
+        playerId: new Types.ObjectId(creatorId),
         role: 0,
       },
     ],

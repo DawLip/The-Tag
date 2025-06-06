@@ -10,6 +10,7 @@ export default function TabLayout() {
     <SafeAreaView style={{flex: 1}} className='bg-bgc'>
       <Stack>
         <Stack.Screen name="Radar" options={{ headerShown: false }} />
+        <Stack.Screen name="Hint" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaView>
   );
