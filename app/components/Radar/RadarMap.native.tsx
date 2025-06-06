@@ -84,7 +84,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
       if (status !== 'granted') return;
 
       await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.High, distanceInterval: 4 },
+        { accuracy: Location.Accuracy.Highest, distanceInterval: 4 },
         (location) => {
           const coords = location.coords;
           setUserLocation(coords);
@@ -292,8 +292,8 @@ const renderEffectors = () => {
             initialRegion={{
               latitude: userLocation.latitude,
               longitude: userLocation.longitude,
-              latitudeDelta: 0.005,
-              longitudeDelta: 0.005,
+              latitudeDelta: 0.0025,
+              longitudeDelta: 0.0025,
             }}
             showsUserLocation={false}
             rotateEnabled

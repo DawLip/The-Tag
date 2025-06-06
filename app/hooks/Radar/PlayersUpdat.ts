@@ -30,7 +30,7 @@ export function usePlayersUpdater(
   updateMapRadar: (players: RadarPlayer[]) => void,
   intervalMs = 1000,
   effectors: Effector[] = [],
-  myPosition?: [number, number],
+  myPosition: [number, number],
   playerRole?: number,
   hp?: number,
   decreaseHp?: (amount: number) => void
@@ -125,31 +125,27 @@ export function usePlayersUpdater(
   }, [socket, currentUserId, intervalMs, updateMapRadar]);
 
   useEffect(() => {
-    //  console.log('useEffect decreaseHp triggered', decreaseHp);
+    // console.log('useEffect decreaseHp triggered', decreaseHp);
   if (!decreaseHp) return;
 
   const interval = setInterval(() => {
-    const hpNow = hpRef.current;
-    const posNow = positionRef.current;
-    const roleNow = roleRef.current;
-    const decreaseHpNow = decreaseHpRef.current;
 
-    if (!posNow || roleNow === undefined || hpNow === undefined || hpNow <= 0 || !decreaseHpNow) {
-      // console.log('Skipping HP decrease: ', { posNow, roleNow, hpNow, decreaseHpNow });
+    if (!positionRef.current || roleRef.current === undefined || hpRef.current === undefined || hpRef.current <= 0 || !decreaseHpRef.current) {
+      // console.log('Skipping HP decrease: ', { positionRef.current, roleRef.current, hpRef.current, decreaseHpRef.current });
       return;
     }
-    // console.log('wywołuje sprawdzenie obniżenia HP')
+    //console.log('wywołuje sprawdzenie obniżenia HP')
 
-    if (roleNow === 2) {
+    if (roleRef.current === 2) {
       // console.log('Gracz jest runner')
       // Sprawdzenie czy jest blisko seekerów
       const isNearSeeker = Object.values(playersRef.current).some(p =>
         p.type === 1 &&
-        getDistance(posNow[0], posNow[1], p.lat, p.lon) < 20
+        getDistance(positionRef.current[0], positionRef.current[1], p.lat, p.lon) < 40
       );
       if (isNearSeeker) {
-        // console.log('Near seeker detected, decreasing HP by 5');
-        decreaseHpNow(5);
+        console.log('Near seeker detected, decreasing HP by 5');
+        decreaseHpRef.current(5);
       }
 
       const now = Date.now();
@@ -157,7 +153,7 @@ export function usePlayersUpdater(
       // Sprawdzenie efektorów "zap" z debugiem
       const inZap = effectorsRef.current.some(e => {
         const active = now - e.StartTime < e.time;
-        const dist = getDistance(posNow[0], posNow[1], e.latitude, e.longitude);
+        const dist = getDistance(positionRef.current[0], positionRef.current[1], e.latitude, e.longitude);
         const inRadius = dist < e.radius;
         const isZap = e.type.toLowerCase() === 'zap';
 
@@ -170,8 +166,8 @@ export function usePlayersUpdater(
         return result;
       });
       if (inZap) {
-        // console.log('In zap area, decreasing HP by 5');
-        decreaseHpNow(5);
+        console.log('In zap area, decreasing HP by 5');
+        decreaseHpRef.current(5);
       }
     }
 
@@ -180,11 +176,11 @@ export function usePlayersUpdater(
     const inDeadZone = effectorsRef.current.some(e =>
       e.type.toLowerCase() === 'deadzone' &&
       now - e.StartTime < e.time &&
-      getDistance(posNow[0], posNow[1], e.latitude, e.longitude) < e.radius
+      getDistance(positionRef.current[0], positionRef.current[1], e.latitude, e.longitude) < e.radius
     );
     if (inDeadZone) {
       // console.log('In deadZone area, decreasing HP by 40');
-      decreaseHpNow(40);
+      decreaseHpRef.current(40);
     }
 
   }, 1000);
@@ -195,7 +191,6 @@ export function usePlayersUpdater(
   return { setIntervalMs: () => {} };
 }
 
-// Haversine formula (approx.)
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371000; // meters
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
