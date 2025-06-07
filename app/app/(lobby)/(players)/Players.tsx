@@ -1,36 +1,61 @@
-import { Image, StyleSheet, Platform, View, Text, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'expo-router';
 
-import Button from '@c/Button';
 import QRCodeGenerator from '@c/QRCode';
-import { useEffect } from 'react';
 import { useSocket } from '@/socket/socket';
 import { AppDispatch } from '@/store';
 import { lobbyUpdate } from '@/store/slices/gameSlice';
 
+import Background from '@c/Background';
+import ProfileIcon from '@img/ProfileIcon.svg';
+import CrossIcon from '@img/CrossIcon.svg';
 
 export default function PlayersScreen() {
   const dispatch = useDispatch<AppDispatch>();
-
   const router = useRouter();
   const socket = useSocket();
 
   const gameCode = useSelector((state: any) => state.game.gameCode);
   const game = useSelector((state: any) => state.game);
+  const players = useSelector((state: any) => state.game.players);
+  const readyCount = players.filter((p: any) => p.ready).length;
 
   return (
-    <View className='flex-1 bg-bgc'>
-      <View>
-        <Text className='text-on_bgc'>Game Code:</Text>
-        <Text className='text-on_bgc'>{gameCode}</Text>
-      </View>
-      <QRCodeGenerator gameCode={gameCode} />
-      <View>
-        {game.roles?.map((role: any, i: number) => (
-          <PlayersListByRole key={role.name} role={role} i={i} />
-        ))}
-      </View>
+    <View style={styles.container}>
+      <Background />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.codeSection}>
+          <Text style={styles.codeLabel}>Game code</Text>
+          <Text style={styles.codeValue}>{gameCode}</Text>
+        </View>
+
+        <View style={styles.qrWrapper}>
+          <QRCodeGenerator gameCode={gameCode} />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Game master</Text>
+          <PlayerItem player={{ username: game.gameMaster?.username || 'N/A', _id: null }} readonly />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Players <Text style={styles.subText}>({readyCount}/{players.length} ready)</Text>
+          </Text>
+
+          {game.roles?.map((role: any, i: number) => (
+            <PlayersListByRole key={role.name} role={role} i={i} />
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -47,36 +72,145 @@ const PlayersListByRole = ({ role, i }: any) => {
 
   const handleLeaveLobby = (_id: any) => {
     socket?.emit('leave_lobby', { gameCode, _id });
-    dispatch(lobbyUpdate({ toChange: { players: players.filter((p: any) => p._id != _id) }, gameCode }))
-  }
+    dispatch(
+      lobbyUpdate({
+        toChange: {
+          players: players.filter((p: any) => p._id !== _id),
+        },
+        gameCode,
+      })
+    );
+  };
 
-  const changeRole = (role: any) => {
+  const changeRole = () => {
     const playersNew = [...players];
-    const index = playersNew.findIndex((player: any) => player._id === userId);
-    playersNew[index] = { ...playersNew[index], role: role }
+    const index = playersNew.findIndex((p: any) => p._id === userId);
+    playersNew[index] = { ...playersNew[index], role: i };
 
-    socket?.emit('lobby_update', { gameCode: gameCode, toChange: { players: playersNew } })
-    dispatch(lobbyUpdate({ toChange: { players: playersNew }, gameCode }))
-  }
+    socket?.emit('lobby_update', {
+      gameCode,
+      toChange: { players: playersNew },
+    });
+    dispatch(
+      lobbyUpdate({ toChange: { players: playersNew }, gameCode })
+    );
+  };
 
   return (
-    <View>
-      <TouchableOpacity onPress={()=>changeRole(i)}>
-        <Text className='text-on_bgc' style={{ fontFamily: 'Aboreto' }}>{role.name}s</Text>
+    <View style={styles.roleSection}>
+      <TouchableOpacity onPress={changeRole}>
+        <Text style={styles.roleTitle}>{role.name}s</Text>
       </TouchableOpacity>
-      {players.filter((player: any) => player.role == i).map((player: any) => (
-        <View className='flex-row items-center gap-16'>
-          <TouchableOpacity onPress={()=>{router.push(`/(other)/Profile/${player._id}`)}}>
-            <Text className='text-on_bgc'>name: {player.username} </Text>
-          </TouchableOpacity>
-          
-          {owner == userId &&
-            <TouchableOpacity onPress={() => handleLeaveLobby(player._id)}>
-              <Text className='text-on_bgc'>X</Text>
-            </TouchableOpacity>
-          }
-        </View>
-      ))}
+
+      {players
+        .filter((p: any) => p.role === i)
+        .map((player: any) => (
+          <PlayerItem
+            key={player._id}
+            player={player}
+            isOwner={owner === userId}
+            onKick={() => handleLeaveLobby(player._id)}
+            onPress={() => router.push(`/(other)/Profile/${player._id}`)}
+          />
+        ))}
     </View>
   );
-}
+};
+
+const PlayerItem = ({
+  player,
+  isOwner = false,
+  onKick,
+  onPress,
+  readonly = false,
+}: {
+  player: any;
+  isOwner?: boolean;
+  onKick?: () => void;
+  onPress?: () => void;
+  readonly?: boolean;
+}) => {
+  return (
+    <View style={styles.playerItem}>
+      <TouchableOpacity onPress={onPress} disabled={readonly}>
+        <View style={styles.playerInfo}>
+          <ProfileIcon width={48} height={48} />
+          <Text style={styles.playerName}>{player.username}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {isOwner && !readonly && (
+        <TouchableOpacity onPress={onKick}>
+          <CrossIcon width={24} height={24} />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#262626',
+    position: 'relative',
+  },
+  scrollContent: {
+    padding: 48,
+    gap: 32,
+  },
+  codeSection: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  codeLabel: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'Aboreto',
+  },
+  codeValue: {
+    color: 'white',
+    fontSize: 32,
+    fontFamily: 'Aboreto',
+  },
+  qrWrapper: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  section: {
+    gap: 16,
+  },
+  sectionTitle: {
+    fontSize: 32,
+    fontFamily: 'Aboreto',
+    color: 'white',
+  },
+  subText: {
+    fontSize: 16,
+    color: '#999',
+  },
+  roleSection: {
+    gap: 12,
+  },
+  roleTitle: {
+    fontSize: 32,
+    fontFamily: 'Aboreto',
+    color: '#999',
+  },
+  playerItem: {
+    width: 297,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  playerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  playerName: {
+    fontSize: 16,
+    color: 'white',
+    fontFamily: 'Aboreto',
+    lineHeight: 24,
+  },
+});

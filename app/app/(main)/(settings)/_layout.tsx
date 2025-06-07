@@ -23,17 +23,14 @@ export default function TabLayout() {
           name="Account"
           options={{ header: () => renderHeader('ACCOUNT') }}
         />
-        <Stack.Screen
-          name="Friends"
-          options={{ header: () => renderHeader('FRIENDS') }}
-        />
+        
         <Stack.Screen
           name="GamesHistory"
           options={{ header: () => renderHeader('GAMES HISTORY') }}
         />
         <Stack.Screen
-          name="Statistics"
-          options={{ header: () => renderHeader('STATISTICS') }}
+          name="Add_friends"
+          options={{ header: () => renderHeader('ADD FRIENDS') }}
         />
       </Stack>
     </SafeAreaView>

@@ -26,14 +26,6 @@ export default function SettingsScreen() {
           <Text style={styles.menuItem}>GAMES HISTORY</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push('/(main)/(settings)/Friends')}>
-          <Text style={styles.menuItem}>FRIENDS</Text>
-        </Pressable>
-
-        <Pressable onPress={() => router.push('/(main)/(settings)/Statistics')}>
-          <Text style={styles.menuItem}>STATISTICS</Text>
-        </Pressable>
-
         <Pressable onPress={() => router.push('/(main)/(settings)/Account')}>
           <Text style={styles.menuItem}>ACCOUNT</Text>
         </Pressable>
@@ -60,7 +52,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
     justifyContent: 'space-between',
     paddingBottom: 32,
-    paddingTop: 32,
+    paddingTop: 64,
   },
   menu: {
     gap: 32,
