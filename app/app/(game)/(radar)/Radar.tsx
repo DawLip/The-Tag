@@ -45,6 +45,7 @@ export default function RadarScreen() {
 
   const [hp, setHp] = useState(100);
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
+
   const [intervalMs, setIntervalMs] = useState(30000); //TODO ściągnąć z game settings
   const [myPosition, setMyPosition] = useState<[number, number]>([50, 50]);
   const [myHeading, setMyHeading] = useState<number | undefined>();
@@ -60,6 +61,9 @@ export default function RadarScreen() {
     orbitalCountdown: 8000,
     orbitalDeadZone: 30000,
   };
+
+  const [gameOver, setGameOver] = useState(false);
+  const [RunnersWins, setIfRunnersWin] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -210,16 +214,46 @@ export default function RadarScreen() {
     }, EFFECTOR_DURATIONS.tracker);
   }
 
-  usePlayersUpdater(
-    currentUserId,
-    setPlayers,
-    intervalMs,
-    effectors,
-    myPosition,
-    playerRole,
-    hp,
-    decreaseHp
-  );
+const { getPlayersCount } = usePlayersUpdater(
+  currentUserId,
+  setPlayers,
+  intervalMs,
+  effectors,
+  myPosition,
+  playerRole,
+  hp,
+  decreaseHp,
+  gameCode 
+);
+    useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('sprawdzam czy wygrali')
+      const { runners, seekers } = getPlayersCount();
+      if (gameOver) return;
+
+      if (runners === 0) {
+        setPlayerRole(0)
+        setGameOver(true);
+        router.push({
+        pathname: '/(game)/(radar)/GameOver-SeekersWin',
+      });
+      } else if (seekers === 0) {
+        setPlayerRole(0)
+        setIfRunnersWin(true);
+        router.push({
+        pathname: '/(game)/(radar)/GameOver-RunnersWin',
+      });
+      } else if (gameTime <= 0 && runners > 0) {
+        setPlayerRole(0)
+        setIfRunnersWin(true);
+        router.push({
+        pathname: '/(game)/(radar)/GameOver-RunnersWin',
+      });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [gameTime, getPlayersCount, gameOver]);
+
 
   const center = getGameCenter(players, gameOwner, currentUserId, myPosition);
   const fallbackCenter: [number, number] = [myPosition[0], myPosition[1]];
