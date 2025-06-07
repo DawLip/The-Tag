@@ -17,9 +17,9 @@ export default function LogsScreen() {
   console.log("logs: ", logs);
   return (
     <View className='flex-1 bg-bgc'>
-      <Button label='nowy log' onPress={()=>{
+      {/* <Button label='nowy log' onPress={()=>{
       socket?.emit('game_update',{gameCode, userId, toChange:{logName:"nowy log"}})
-    }}/>
+    }}/> */}
       {logs.map((log:any)=><LogItem log={log}/>)}
     </View>
   );

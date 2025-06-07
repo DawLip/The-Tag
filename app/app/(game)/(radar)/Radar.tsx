@@ -62,13 +62,75 @@ export default function RadarScreen() {
     orbitalDeadZone: 30000,
   };
 
-  const [gameOver, setGameOver] = useState(false);
-  const [RunnersWins, setIfRunnersWin] = useState(false);
+  const decreaseHp = useCallback((amount: number) => {
+    if (playerRoleRef.current === 2 && saveTime > 0) return;
+    setHp(prev => Math.max(prev - amount, 0));
+  }, [saveTime]);
+
+  
+const hasGameEndedRef = useRef(false);
+const checkIfGameEnded = (runnersCount:number, seekersCount:number) => {
+  if (hasGameEndedRef.current) return;
+  if(saveTime > 0) return;
+
+  console.log('Sprawdzam warunki zakończenia gry...');
+
+  if (runnersCount === 0) {
+    hasGameEndedRef.current = true;
+    setPlayerRole(0);
+    if (currentUserId === gameOwner) {
+      socket?.emit('game_update', {
+        gameCode,
+        currentUserId,
+        toChange: {
+          logName: "Gra została zakończona",
+        },
+      });
+    }
+    router.push({
+      pathname: '/(game)/(radar)/GameOver-SeekersWin',
+    });
+
+  } else if (seekersCount === 0 || (gameTime <= 0 && runnersCount > 0)) {
+    hasGameEndedRef.current = true;
+    setPlayerRole(0);
+    if (currentUserId === gameOwner) {
+      socket?.emit('game_update', {
+        gameCode,
+        currentUserId,
+        toChange: {
+          logName: "Gra została zakończona",
+        },
+      });
+    }
+    router.push({
+      pathname: '/(game)/(radar)/GameOver-RunnersWin',
+    });
+  }
+};
+
+const {getPlayersCount} = usePlayersUpdater(
+  currentUserId,
+  setPlayers,
+  intervalMs,
+  effectors,
+  myPosition,
+  checkIfGameEnded,
+  playerRole,
+  hp,
+  decreaseHp,
+);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setSaveTime(prev => (prev > 0 ? prev - 1 : 0));
       setGameTime(prev => (saveTime === 0 && prev > 0 ? prev - 1 : prev));
+      if(gameTime < 1)
+        {
+          const { runners, seekers } = getPlayersCount();
+
+           checkIfGameEnded(runners, seekers);
+        }
     }, 1000);
     return () => clearInterval(interval);
   }, [saveTime]);
@@ -79,20 +141,28 @@ export default function RadarScreen() {
     return `${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  const decreaseHp = useCallback((amount: number) => {
-    if (playerRoleRef.current === 2 && saveTime > 0) return;
-    setHp(prev => Math.max(prev - amount, 0));
-  }, [saveTime]);
+
 
   useEffect(() => {
-    if (hp === 0) {
+    if (hp === 0 && playerRole !== 0) {
       setPlayerRole(0);
       socket?.emit('game_update', {
         gameCode,
+        currentUserId,
         toChange: {
           logName: playerRole === 1 ? 'Szukający został wyeliminowany' : 'Biegacz został złapany'
         }
       });
+
+      socket?.emit('pos_update', {
+        gameCode,
+        userId: currentUserId,
+        pos: { lat:myPosition[0], lon:myPosition[1], type:0  },
+      });
+
+      const { runners, seekers } = getPlayersCount();
+      console.log(runners, seekers)
+      checkIfGameEnded(runners, seekers);
     }
   }, [hp, playerRole, gameCode, socket]);
 
@@ -100,6 +170,7 @@ export default function RadarScreen() {
     if (socket && socket.connected && gameCode) {
       socket.emit('game_update', {
         gameCode,
+        currentUserId,
         toChange: {
           type: 'effectors',
           effectors: [newEffector],
@@ -124,6 +195,7 @@ export default function RadarScreen() {
       };
       socket.emit('game_update', {
         gameCode,
+        currentUserId,
         toChange: {
           type: 'effectors',
           effectors: [dynamicEffector],
@@ -213,47 +285,6 @@ export default function RadarScreen() {
       setIntervalMs(previousInterval);
     }, EFFECTOR_DURATIONS.tracker);
   }
-
-const { getPlayersCount } = usePlayersUpdater(
-  currentUserId,
-  setPlayers,
-  intervalMs,
-  effectors,
-  myPosition,
-  playerRole,
-  hp,
-  decreaseHp,
-  gameCode 
-);
-    useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('sprawdzam czy wygrali')
-      const { runners, seekers } = getPlayersCount();
-      if (gameOver) return;
-
-      if (runners === 0) {
-        setPlayerRole(0)
-        setGameOver(true);
-        router.push({
-        pathname: '/(game)/(radar)/GameOver-SeekersWin',
-      });
-      } else if (seekers === 0) {
-        setPlayerRole(0)
-        setIfRunnersWin(true);
-        router.push({
-        pathname: '/(game)/(radar)/GameOver-RunnersWin',
-      });
-      } else if (gameTime <= 0 && runners > 0) {
-        setPlayerRole(0)
-        setIfRunnersWin(true);
-        router.push({
-        pathname: '/(game)/(radar)/GameOver-RunnersWin',
-      });
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [gameTime, getPlayersCount, gameOver]);
-
 
   const center = getGameCenter(players, gameOwner, currentUserId, myPosition);
   const fallbackCenter: [number, number] = [myPosition[0], myPosition[1]];

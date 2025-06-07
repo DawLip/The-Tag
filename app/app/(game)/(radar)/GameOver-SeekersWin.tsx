@@ -23,12 +23,6 @@ export default function GameOverScreen() {
           label="Leave game"
           onPress={() => router.replace('/(main)/(home)/Home')}
         />
-
-        <Button
-          label="Spectate"
-          onPress={() => router.back()}
-          style={{ marginTop: 12 }}
-        />
       </View>
     </View>
   );

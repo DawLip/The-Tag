@@ -31,15 +31,15 @@ export function usePlayersUpdater(
   intervalMs = 1000,
   effectors: Effector[] = [],
   myPosition: [number, number],
+  checkIfGameEnded: (runnersCount:number, seekersCount:number) => void,
   playerRole?: number,
   hp?: number,
   decreaseHp?: (amount: number) => void,
-  gameCode?: string
 ) {
   const socket = useContext(SocketContext);
   const playersRef = useRef<Record<string, RawPlayer>>({});
   const effectorsRef = useRef<Effector[]>(effectors);
-  const gameEndedRef = useRef(false); // ✅
+  const gameEndedRef = useRef(false); 
 
   const hpRef = useRef(hp);
   const positionRef = useRef(myPosition);
@@ -58,35 +58,16 @@ export function usePlayersUpdater(
     return others + selfMatches;
     
   }
-
-  function checkEndConditions() {
-    if (gameEndedRef.current) return;
-
-    const runners = countAlivePlayersOfType(2);
-    const seekers = countAlivePlayersOfType(1);
-
-    if (runners === 0 || seekers === 0) {
-      gameEndedRef.current = true;
-
-      const message =
-        seekers === 0
-          ? 'Runnerzy wygrali! Wszyscy szukający zostali wyeliminowani.'
-          : 'Szukający wygrali! Wszyscy biegacze zostali złapani.';
-
-      socket?.emit('game_update', {
-        gameCode,
-        toChange: {
-          logName: message,
-          gameEnded: true,
-        },
-      });
-    }
-  }
-
   useEffect(() => {
     if (!socket) return;
-
+    var runners = countAlivePlayersOfType(2)
+    var seekers =  countAlivePlayersOfType(1)
+    checkIfGameEnded(runners, seekers)
     const onPlayersUpdate = (data: { userId: string; pos: { lat: number; lon: number; type: number } }) => {
+    var runners = countAlivePlayersOfType(2)
+    var seekers =  countAlivePlayersOfType(1)
+    checkIfGameEnded(runners, seekers)
+
       if (!data?.userId || !data?.pos) return;
       const { userId, pos } = data;
 
@@ -97,8 +78,6 @@ export function usePlayersUpdater(
           lon: pos.lon,
           type: pos.type,
         };
-
-        checkEndConditions(); // ✅ sprawdzaj od razu po aktualizacji gracza
       }
     };
 
@@ -132,7 +111,9 @@ export function usePlayersUpdater(
       });
 
       updateMapRadar(formatted);
-      checkEndConditions(); 
+      var runners = countAlivePlayersOfType(2)
+      var seekers =  countAlivePlayersOfType(1)
+      checkIfGameEnded(runners, seekers) 
     }, intervalMs);
 
     return () => {
@@ -181,18 +162,20 @@ export function usePlayersUpdater(
         decreaseHpRef.current(40);
       }
 
-      checkEndConditions(); 
+      // checkEndConditions(); 
     }, 1000);
 
     return () => clearInterval(interval);
   }, [decreaseHp]);
 
   return {
+
     setIntervalMs: () => {},
     getPlayersCount: () => ({
-      seekers: countAlivePlayersOfType(1),
       runners: countAlivePlayersOfType(2),
+      seekers: countAlivePlayersOfType(1),
     }),
+
   };
 }
 

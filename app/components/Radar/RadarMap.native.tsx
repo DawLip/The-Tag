@@ -120,7 +120,7 @@ export const RadarMap: React.FC<RadarMapProps> = ({ playerHP, maxZoomRadius, pla
 
   const isPlayerVisible = (player: Player, currentPlayerType: number): boolean => {
     if (player.invisible) return false;
-    if (currentPlayerType === 0) return true;
+    if (currentPlayerType === 0) return false;
     if (currentPlayerType === 1) return player.type !== 0;
     return player.type !== 1;
   };
