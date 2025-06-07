@@ -23,7 +23,8 @@ export default function TabLayout() {
 
     const game_update = (data:any) => {
       console.log("=== GAME_UPDATE ===")
-      if(data.logName) dispatch(addLog({name: data.logName, userId}));
+      console.log(data)
+      if(data.toChange.logName) dispatch(addLog({name: data.toChange.logName, userId}));
       dispatch(lobbyUpdate(data));
     }
 

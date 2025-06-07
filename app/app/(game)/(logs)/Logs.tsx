@@ -5,15 +5,21 @@ import Button from '@c/Button';
 
 import Logo from '@img/Logo.svg';
 import { useSelector } from 'react-redux';
+import { useSocket } from '@/socket/socket';
 
 export default function LogsScreen() {
   const router = useRouter();
-
+  const socket = useSocket();
   const logs = useSelector((state: any) => state.game.gameLogs);
+  const gameCode = useSelector((state:any) => state.game.gameCode)
+  const userId = useSelector((state:any) => state.auth.userId)
   
   console.log("logs: ", logs);
   return (
     <View className='flex-1 bg-bgc'>
+      <Button label='nowy log' onPress={()=>{
+      socket?.emit('game_update',{gameCode, userId, toChange:{logName:"nowy log"}})
+    }}/>
       {logs.map((log:any)=><LogItem log={log}/>)}
     </View>
   );
