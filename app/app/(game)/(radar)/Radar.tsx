@@ -47,6 +47,8 @@ export default function RadarScreen() {
   const [players, setPlayers] = useState<RadarPlayer[]>([]);
 
   const [intervalMs, setIntervalMs] = useState(30000); //TODO ściągnąć z game settings
+  const intervalMsRef = useRef(intervalMs);
+
   const [myPosition, setMyPosition] = useState<[number, number]>([50, 50]);
   const [myHeading, setMyHeading] = useState<number | undefined>();
   const effectors = useEffectorsUpdater(gameCode);
@@ -108,6 +110,19 @@ const checkIfGameEnded = (runnersCount:number, seekersCount:number) => {
     });
   }
 };
+useEffect(() => {
+  const halfSaveTime = Math.floor((settingsSaveTime * 60) / 2);
+
+  if (saveTime > halfSaveTime) {
+    if (intervalMs !== 1000) {
+      setIntervalMs(1000);
+    }
+  } else {
+    if (intervalMs !== 30000) {
+      setIntervalMs(30000); 
+    }
+  }
+}, [gameTime, settingsGameTime, intervalMs]);
 
 const {getPlayersCount} = usePlayersUpdater(
   currentUserId,
@@ -210,7 +225,7 @@ const {getPlayersCount} = usePlayersUpdater(
     if (orbitalUses <= 0 || !socket || !socket.connected || !myPosition || !currentUserId) return;
     setOrbitalUses(prev => Math.max(prev - 1, 0));
     const now = Date.now();
-    const targetPosition = calculateOffsetPosition(myPosition, 20, heading);
+    const targetPosition = calculateOffsetPosition(myPosition, 520, heading);
     const countdownEffector: RadarEffector = {
       latitude: targetPosition[0],
       longitude: targetPosition[1],
@@ -271,7 +286,6 @@ const {getPlayersCount} = usePlayersUpdater(
     addDynamicEffector(invizEffector, () => myPosition);
   }
 
-  const intervalMsRef = useRef(intervalMs);
   useEffect(() => {
     intervalMsRef.current = intervalMs;
   }, [intervalMs]);

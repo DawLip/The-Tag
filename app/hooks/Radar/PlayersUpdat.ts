@@ -46,11 +46,16 @@ export function usePlayersUpdater(
   const roleRef = useRef(playerRole);
   const decreaseHpRef = useRef(decreaseHp);
 
-  useEffect(() => { effectorsRef.current = effectors; }, [effectors]);
-  useEffect(() => { hpRef.current = hp; }, [hp]);
-  useEffect(() => { positionRef.current = myPosition; }, [myPosition]);
-  useEffect(() => { roleRef.current = playerRole; }, [playerRole]);
-  useEffect(() => { decreaseHpRef.current = decreaseHp; }, [decreaseHp]);
+  useEffect(() => {if (!socket) return;
+     effectorsRef.current = effectors; }, [effectors, socket]);
+  useEffect(() => {if (!socket) return;
+     hpRef.current = hp; }, [hp, socket]);
+  useEffect(() => {if (!socket) return;
+     positionRef.current = myPosition; }, [myPosition, socket]);
+  useEffect(() => {if (!socket) return;
+     roleRef.current = playerRole; }, [playerRole, socket]);
+  useEffect(() => {if (!socket) return;
+     decreaseHpRef.current = decreaseHp; }, [decreaseHp, socket]);
 
   function countAlivePlayersOfType(type: number): number {
     const others = Object.values(playersRef.current).filter(p => p.type === type).length;
@@ -124,7 +129,7 @@ export function usePlayersUpdater(
 
   useEffect(() => {
     if (!decreaseHp) return;
-
+    if (!socket) return;
     const interval = setInterval(() => {
       if (!positionRef.current || roleRef.current === undefined || hpRef.current === undefined || hpRef.current <= 0 || !decreaseHpRef.current) {
         return;
@@ -166,7 +171,7 @@ export function usePlayersUpdater(
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [decreaseHp]);
+  }, [decreaseHp, socket]);
 
   return {
 
