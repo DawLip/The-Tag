@@ -11,6 +11,8 @@ export default function TabLayout() {
       <Stack>
         <Stack.Screen name="Radar" options={{ headerShown: false }} />
         <Stack.Screen name="Hint" options={{ headerShown: false }} />
+        <Stack.Screen name="GameOver-RunnersWin" options={{ headerShown: false }} />
+        <Stack.Screen name="GameOver-SeekersWin" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaView>
   );

@@ -352,7 +352,7 @@ const {getPlayersCount} = usePlayersUpdater(
         </Text>
       </View>
       <TouchableOpacity onPress={() => router.push('/(game)/(radar)/Hint')} style={styles.abilitiesHeader}>
-        <Text style={styles.abilitiesText}>Umiejętności</Text>
+        <Text style={styles.abilitiesText}>Skills</Text>
         <Image source={require('@/assets/images/infoIcon.png')} style={{ width: 32, height: 32 }} />
       </TouchableOpacity>
       {playerRole !== 0 && (
@@ -361,6 +361,7 @@ const {getPlayersCount} = usePlayersUpdater(
             <>
               <View style={styles.perkButton}>
                 <PerkButton icon={<Image source={require('@/assets/images/orbital_strike.png')} style={styles.icon} />} usesLeft={orbitalUses} activeDuration={2500} cooldownDuration={0} onUse={() => useOrbitalStrike(myHeading)} />
+                
               </View>
               <View style={styles.perkButton}>
                 <PerkButton icon={<Image source={require('@/assets/images/zap.png')} style={styles.icon} />} usesLeft={zapUses} activeDuration={5000} cooldownDuration={zapUses > 0 ? 15000 : 0} onUse={() => useZap()} />
@@ -380,40 +381,42 @@ const {getPlayersCount} = usePlayersUpdater(
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
+    alignItems: 'center',
   },
   timeContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
+    marginTop: 8,
+    alignItems: 'center',
   },
   timeText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontFamily: 'Aboreto',
   },
   abilitiesHeader: {
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingTop: 4,
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   abilitiesText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontFamily: 'Aboreto',
+    textAlign: 'center',
   },
   perksWrapper: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 24,
   },
   perkButton: {
-    width: '48%',
+    marginHorizontal: 6,
     marginBottom: 12,
   },
   icon: {

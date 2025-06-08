@@ -158,8 +158,8 @@ const PerkButton: React.FC<AbilitiesButtonProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    width: 130,
-    height: 60,
+    width: 152,
+    height: 80,
   },
   button: {
     flexDirection: 'row',
@@ -190,12 +190,12 @@ const styles = StyleSheet.create({
     position: 'relative',
     zIndex: 2,
     top: 1.5,
-    left: -12,  
+    left: -2,
   },
   svgOverlay: {
     position: 'absolute',
     top: -1.5,
-    left: -9,
+    left: -22,
     zIndex: 1,
   },
   usesContainer: {

@@ -1,52 +1,86 @@
-import { Image, StyleSheet, Platform, View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-
-import Button from '@c/Button';
-
-import Logo from '@img/Logo.svg';
 import { useSelector } from 'react-redux';
 import { useSocket } from '@/socket/socket';
+import Background from '@c/Background';
 
 export default function LogsScreen() {
   const router = useRouter();
   const socket = useSocket();
   const logs = useSelector((state: any) => state.game.gameLogs);
-  const gameCode = useSelector((state:any) => state.game.gameCode)
-  const userId = useSelector((state:any) => state.auth.userId)
-  
-  console.log("logs: ", logs);
+  const gameCode = useSelector((state: any) => state.game.gameCode);
+  const userId = useSelector((state: any) => state.auth.userId);
+
   return (
-    <View className='flex-1 bg-bgc'>
-      {/* <Button label='nowy log' onPress={()=>{
-      socket?.emit('game_update',{gameCode, userId, toChange:{logName:"nowy log"}})
-    }}/> */}
-      {logs.map((log:any)=><LogItem log={log}/>)}
+    <View style={styles.container}>
+      <Background/>
+      {logs.map((log: any, index: number) => (
+        <LogItem key={index} log={log} />
+      ))}
     </View>
   );
 }
 
-const LogItem = ({log}:{log:any}) => {
+const LogItem = ({ log }: { log: any }) => {
   return (
-  <View>
-    <Text>{formatDate(log.date)}</Text>
-    <Text>{log.name}</Text>
-    <Text>Players: {log.playersRemaining}</Text>
-    <Text>Your role: {log.yourRole}</Text>
-  </View>
+    <View style={styles.logItem}>
+      <Text style={styles.date}>{formatDate(log.date)}</Text>
+      <Text style={styles.name}>{log.name}</Text>
+
+      <View style={styles.meta}>
+        <Text style={styles.label}>
+          players: <Text style={styles.value}>{log.playersRemaining}</Text>
+        </Text>
+        <Text style={styles.label}>
+          Your role: <Text style={styles.value}>{log.yourRole}</Text>
+        </Text>
+        <Text style={styles.label}>
+          Time remaining: <Text style={styles.value}>{log.timeRemaining || '—'}</Text>
+        </Text>
+      </View>
+    </View>
   );
-}
+};
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
-
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); 
-  const year = date.getFullYear();
-
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-
-  return `${day}:${month}:${year} ${hours}:${minutes}:${seconds}`;
+  const d = (n: number) => String(n).padStart(2, '0');
+  return `${d(date.getDate())}.${d(date.getMonth() + 1)}.${date.getFullYear()} ${d(date.getHours())}:${d(date.getMinutes())}`;
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#262626',
+    padding: 48,
+  },
+  logItem: {
+    marginBottom: 20,
+    gap: 4,
+  },
+  date: {
+    fontSize: 12,
+    color: '#929292',
+    fontFamily: 'Aboreto',
+    lineHeight: 12,
+  },
+  name: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontFamily: 'Aboreto',
+    lineHeight: 16,
+  },
+  meta: {
+    marginTop: 6,
+    gap: 4,
+  },
+  label: {
+    fontSize: 12,
+    color: '#929292',
+    fontFamily: 'Aboreto',
+    lineHeight: 12,
+  },
+  value: {
+    color: '#FFFFFF',
+  },
+});

@@ -2,13 +2,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import Button from '@c/Button';
-import Background from '@c/Background';  // dopasuj ścieżkę importu
+import Background from '@c/Background';
 
 export default function GameOverScreen() {
-  const router = useRouter();
+  //const router = useRouter();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Background />
       <View style={styles.content}>
         <Text style={[styles.title, { fontFamily: 'Aboreto' }]}>
@@ -23,16 +23,20 @@ export default function GameOverScreen() {
           label="Leave game"
           onPress={() => router.replace('/(main)/(home)/Home')}
         />
-
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
+  container: {
     flex: 1,
-    zIndex: 1,              // żeby był nad tłem
+    justifyContent: 'center',
+    alignItems: 'center',   
+    backgroundColor: 'transparent',
+  },
+  content: {
+    zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
