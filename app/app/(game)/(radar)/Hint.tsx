@@ -11,10 +11,10 @@ export default function EventsScreen() {
   return (
     <View style={styles.container}>
       <Background/>
-      <Skill label='zap' description='description' icon='zap' />
-      <Skill label='tracker' description='description' icon='tracker' />
-      <Skill label='orbital strike' description='description' icon='orbital_strike' />
-      <Skill label='invisibility' description='description' icon='inviz' />
+      <Skill label='zap' description='Zwiększa efektywność ścigającego poprzez przyspieszenie procesu złapania gracza' icon='zap' />
+      <Skill label='tracker' description='Powoduje szybsze odświeżenie informacje o położeniu przeciwnika' icon='tracker' />
+      <Skill label='orbital strike' description='Zaznacza tymczasowo strefę na mapie, do której nie wolno wchodzić żadnemu z graczy.' icon='orbital_strike' />
+      <Skill label='invisibility' description='Umiejętność tworzy wokół gracza obszar niewidzialności, która uniemożliwia zobaczenia gracza na mapie.' icon='inviz' />
     </View>
   );
 }
